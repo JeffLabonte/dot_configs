@@ -11,6 +11,7 @@ backup "${NVIM_PATH}"
 backup "${TREE_VIM_PATH}"
 
 if [ ! -d "${TREE_VIM_PATH}" ]; then
+    mkdir "${TREE_VIM_PATH}"
     cd ${TREE_VIM_PATH} && sh $(wget -O- https://raw.githubusercontent.com/zgpio/tree.nvim/master/install.sh)  && \
     cd ${TREE_VIM_PATH} && sh $(curl -fsSL https://raw.githubusercontent.com/zgpio/tree.nvim/master/install.sh)
 fi
@@ -30,4 +31,4 @@ if [ ! -d ${HOME}/n ]; then
     n lts
 fi
 
-nvim +PlugInstall +q
+nvim +PlugInstall

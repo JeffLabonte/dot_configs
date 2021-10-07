@@ -36,6 +36,7 @@ Plug 'kyazdani42/nvim-web-devicons'
 Plug 'kyazdani42/nvim-tree.lua'
 
 Plug 'neovim/nvim-lspconfig'
+Plug 'rakr/vim-one'
 call plug#end()
 
 filetype plugin indent on
@@ -47,7 +48,6 @@ set t_Co=256
 set t_ut=
 set noshowmode
 
-" sane editing
 set expandtab
 set tabstop=4
 set shiftwidth=4
@@ -58,7 +58,8 @@ set tw=160
 set autoindent
 set smartindent
 
-colorscheme tokyonight
+colorscheme one
+set background=dark
 
 map <Space> <Leader>
 
@@ -339,7 +340,6 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
   buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
   buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
-  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
 
 end
 
@@ -357,10 +357,10 @@ end
 EOF
 
 
-
-" Using Lua functions
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
 nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
 nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
 nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
+
+nnoremap <leader>cf <cmd>:ALEFix black<cr>
 

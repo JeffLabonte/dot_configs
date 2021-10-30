@@ -4,6 +4,14 @@ function backup () {
     cp -rf $1 $1.back
 }
 
+APT_INSTALLER=$(which apt)
+
+if [[ -f "${APT_INSTALLER}" ]]; then
+    sudo apt install pipx python3-dev python3-venv python-is-python3
+fi
+
+npm install -g npm
+
 NVIM_PATH="${HOME}/.config/nvim"
 TREE_VIM_PATH="${HOME}/tree.nvim"
 

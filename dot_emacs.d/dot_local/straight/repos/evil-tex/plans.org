@@ -1,0 +1,162 @@
+#+TITLE: Plans
+* TODO End of the Line
+** DONE Text object for table cells
+** DONE fix envs not understanding nesting, adapt delim algorithm
+** DONE unify =$= and =m=, paritally unify =m= and =M=
+unify =m= and =M= for surround deletion and change, but not insertion
+** DONE Check customizations suggested in the readme
+** DONE Add notes about interactions with other packages in readme
+- Surround
+- Embrace
+- Which-key
+- Snipe
+** DONE Bind the tab-like movement to some key
+** DONE change =mtS= functionality to change name of section
+** DONE fix sub/superscript textobjects
+** DONE Reach out to the original evil-LaTeX-txtobjs author
+** DONE bind textobjects on local keymap
+** DONE Bug when defining custom envs:
+if you use the ~cons~ definition in the ~envs-alist~, you need to include the
+~\n~'s in order for it to format correctly. This not only breaks the newline
+variable convention, it also causes ~which-key~ to bug out as it takes ~\n~ to
+be part of the name
+** DONE Make =cse= respect options like [foo] when newline is on
+** DONE fix env textobject edge case
+for =[foo]='s after a newline that are considered inputs here.
+** DONE fix bug of =tsd= on ~()~
+** DONE think about changing overlays in toggles
+currently we have =an-over= and =in-over=, =right-over= and =left-over= might
+make more sense in some cases.
+** DONE No need to get rid of code duplication when binding textobjects
+** DONE refactor =evil-tex--select-table-cell= because dear god
+** DONE add various =\big='s to the delim text object, prob with a macro.
+** DONE Consider using ~interactive~ for keymap reads
+Its more fluent in elisp. Nothing to do anymore, because ~evil-surround~ doesn't
+call the functions it reads interactively so
+** DONE Go over all documentation, and make it better
+Particularly the one under ~define-minor-mode~.
+Also probably delete =test.tex=
+** DONE have final look at README
+Restructure. Maybe move appendix to seperate file, maybe add recomended plugins
+section.
+** DONE Restructure order of all the functions so it makes more sense (if need be).
+** DONE cse doesn't work when you do it on the last =}= of the end.
+** TODO Auctex ~TeX-find-macro-start~ bug
+when on the bolded bracket of \frac{N!}{(N-i+1 =)= !(i+1)!}, ~TeX-find-macro-start~
+returns ~nil~ which ruins the command text object sometimes
+- Implement it ourselves?
+- Send bug report / contribute to auctex
+- Work around, detecting if its nil and and if so go back a few chars
+** TODO ~tsf~ toggle \frac{a}{b} <-> a/b
+** DONE Final stress test
+Take a copy of Itai's =main.tex= and make sure everything works as expected on a
+real document
+** DONE Tag release as 1.0, upload to MELPA
+** TODO send links to places.
+* Bugfixes
+* Features
+** DONE Text Objects
+For environments, commands/macros, inline & display math
+*** DONE Steal [[https://github.com/hpdeifel/evil-latex-textobjects][evil-latex-textobjects]]
+*** DONE Make Text Objects Work with Surround
+*** DONE Make the env newline rational
+Currently the newline behavior is erratic. \begin{...} \end{...} should always
+appear in lines of their own.
+** DONE Math
+*** DONE Define math surrounding behavior: inline or display?
+**** Add a new txt obj =M= only for display math
+=m= would still match \], but when changing something to a math env =m= would be for
+/inline/ math and =M= for /display/.
+**** =m= is only for inline; use [[*With a flag][the flag]].
+=m= would only insert /inline/, for display insert an *equation* env*, and with
+[[*With a flag][the flag]] it would result in a \].
+*** DONE evil-surround like bindings for toggling inline/display math
+Redundant with:
+- The =M= txt obj: user would just press =csmM=
+** DONE General delimiter text object, with integration to evil-surround
+*** DONE create delimiter text object
+*** DONE integrate with surround
+*** DONE add prompt
+** DONE Environment changing
+This is the =csd/cse/tsd/tse= commands from vimtex
+*** DONE Vimtex way - minibuffer with evil-surrountd
+Just through a prompt. That would be through the minibuffer in Emacs.
+*** DONE Using an alias table
+~texmathp-environments~ is useful so I put it here. After doing =cse= you would will
+be able to enter one letter aliases to immediately change the enviornment, e.g.
+=csea= for changing to =align=, or =cseE= for changing to =equation*=.
+- One mapping, e.g. =csez=, will be reserved for *entering a prompt* so you can
+fully type out the thing.
+- This is a very vimish way: i.e =csea= would be mapped to ~align~ environment
+- Aliases would be *customizable*
+- Have a *Menu for an overview* of the aliases
+** DONE CDLaTeX-tab-like movement (implemented already)
+** DONE Steal some more stuff from vimtex
+*** DONE section text object iS aS
+*** DONE add ]] etc motions, see evil-forward-section etc
+*** DONE maybeeeeee still do the toggle?
+** DONE Misc
+*** DONE Add beamer or other envs to the env keymap
+*** DONE Sub/superscript text objects
+change inside/around sub/superscript =ci^ ci_= which would jump to the closest
+  sub/superscript
+  - Would not work with surround-stuff, only =c/d= commands. Just thought it
+    might be useful (Say you quickly want to change a sigma index...)
+
+* Proposed
+* Rejected
+** Support math envs (=begin{align}=...) with math text objects
+- Use =tsm= to toggle between =begin{align}= and =begin{equation}= (It already
+  toggles between =\(\)= and =\[\]=)
+
+  I don't use =begin{equation}= at all, only =\[\]=. In amsmath, =\[\]= are
+  defined just to yield a =begin{equation*}...=. If we support toggling
+  only =equation= and =align=, getting from =\[\]= to =align= wouldn't be nice.
+Itai: I thought we agreed that it would be best to just have a way for the user
+to decide how this acts because there is no good universal option.
+** Mark the environment being changed while user changing it
+Would be hard as currently it's implemented with surround which deletes the
+surrounding delimiters (doesn't mark them).
+This is exactly what [[https://github.com/edkolev/evil-goggles][evil-goggles]] does. We can either:
+- Just add a similar functionality to our plugin
+- Add an optional integration to evil-goggles in this repo
+- Add an integration with goggles in the goggles plugin (this sounds odd but
+  goggles has built-in integration with evil-surround and other plugins)
+** Add stuff to ~thing-at-point~ so a backslash is considered part of a symbol
+I'm not so sure of the interactive use of this, as =cio= (change inner symbol)
+would be the same as =csm= (change surrounding macro). However, there are other
+things that use ~symbol-at-point~ (such as project search), which is why it might
+be useful
+* Far Future
+* Appendix
+** Keybinds
+| Mode         | Keybind | Action                                                                         |
+|--------------+---------+--------------------------------------------------------------------------------|
+| Normal       | =csd=     | Change surrounding delimiter (see id/ad)                                       |
+|              | =cse=     | Change environment                                                             |
+|              | =csc=     | Change command (should be acessable from any brace e.g. ==\frac{}{:}==)          |
+|              | =tsd=     | Toggle surrounding delimiter, e.g. =(f:oo)= <===> =\left(f:oo\right)=              |
+|              | =tse=     | For surrounding environment, equation <==> equation*, or align <==> align*     |
+|              | =tsm=     | For surrounding math, =\(\)= <==> =\[\]=                                           |
+|              | =dse=     | Delete surrounding environment                                                 |
+|              | =dsc=     | Delete surrounding command, =\tilde{a}= => =a=                                           |
+| Text objects | =ie=, =ae=  | Select inside/around *environment*                                               |
+|              | =ic=, =ac=  | Select inside/around *command* (macro)                                           |
+|              | =im=, =am=  | Select inside/around *math*                                                      |
+|              | =id=, =ad=  | Select inside/around delimiter (math parentheses), e.g. =()=, =[]=, =\left[\right]=. |
+| Insert       | ?       | Brace movement                                                                 |
+** Things to add to Doom in another repo later
+*** DONE =TeX-fold= flag
+would define bindings and advices for =TeX-fold=
+*** DONE Folding
+Doom has its own folding module, which tries ~hideshow~, ~outline-minor-mode~, and
+~vimish-fold~. We should probably override its keybinds, as we know whats best for
+LaTeX.
+- [ ] Show labels on folds
+**** DONE Sections, subsections
+Auctex configure ~outline-minor-mode~ (which is part of Emacs). We just need to
+hook outline and set a keybind to try to fold using outline.
+**** DONE Environments
+Done in [[https://github.com/hlissner/doom-emacs/pull/2818][doom-emacs/#2818]].
+**** Have an org-like cycle functionality, start the buffer folded
+[[https://github.com/Malabarba/latex-extra][latex-extra]] does it, but it only uses outline for section folding (not env).

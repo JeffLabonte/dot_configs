@@ -1,0 +1,120 @@
+#+TITLE: org-pdftools: a custom org link type for pdf-tools
+
+This project was inspired by and built upon ~org-pdfview~ from @markus1189.
+* Installation
+
+You can now install ~org-pdftools~ and ~org-noter-pdftools~ from MELPA!
+
+[[https://melpa.org/#/org-pdftools][file:https://melpa.org/packages/org-pdftools-badge.svg]]
+
+[[https://melpa.org/#/org-pdftools][file:https://melpa.org/packages/org-noter-pdftools-badge.svg]]
+
+Run ~M-x pdf-tools-install~ after installation of ~pdftools~ if you haven't done before.
+#+BEGIN_SRC elisp
+(use-package org-noter
+  :config
+  ;; Your org-noter config ........
+  (require 'org-noter-pdftools))
+
+(use-package org-pdftools
+  :hook (org-mode . org-pdftools-setup-link))
+
+(use-package org-noter-pdftools
+  :after org-noter
+  :config
+  ;; Add a function to ensure precise note is inserted
+  (defun org-noter-pdftools-insert-precise-note (&optional toggle-no-questions)
+    (interactive "P")
+    (org-noter--with-valid-session
+     (let ((org-noter-insert-note-no-questions (if toggle-no-questions
+                                                   (not org-noter-insert-note-no-questions)
+                                                 org-noter-insert-note-no-questions))
+           (org-pdftools-use-isearch-link t)
+           (org-pdftools-use-freepointer-annot t))
+       (org-noter-insert-note (org-noter--get-precise-info)))))
+
+  ;; fix https://github.com/weirdNox/org-noter/pull/93/commits/f8349ae7575e599f375de1be6be2d0d5de4e6cbf
+  (defun org-noter-set-start-location (&optional arg)
+    "When opening a session with this document, go to the current location.
+With a prefix ARG, remove start location."
+    (interactive "P")
+    (org-noter--with-valid-session
+     (let ((inhibit-read-only t)
+           (ast (org-noter--parse-root))
+           (location (org-noter--doc-approx-location (when (called-interactively-p 'any) 'interactive))))
+       (with-current-buffer (org-noter--session-notes-buffer session)
+         (org-with-wide-buffer
+          (goto-char (org-element-property :begin ast))
+          (if arg
+              (org-entry-delete nil org-noter-property-note-location)
+            (org-entry-put nil org-noter-property-note-location
+                           (org-noter--pretty-print-location location))))))))
+  (with-eval-after-load 'pdf-annot
+    (add-hook 'pdf-annot-activate-handler-functions #'org-noter-pdftools-jump-to-note)))
+#+END_SRC
+
+* Latest release note
+- Incorporated https://github.com/weirdNox/org-noter/pull/93/commits/f8349ae7575e599f375de1be6be2d0d5de4e6cbf in Usage README
+- Added customizable variable ~org-pdftools-use-isearch-link~ and ~org-pdftools-use-freepointer-annot~ to control whether you will get prompt to create isearch/freepointer link if no existing annotations are found
+
+* Usage 
+In order to link a specific page of a .pdf-file in an org-file, use the following syntax:
+#+begin_example 
+[[pdf:~/file.pdf::3][Link to page 3]]
+#+end_example
+
+When browsing a pdftools-buffer you can use =org-store-link= (by default =C-c l=) to get a link to this location withing the pdf -- even while marking some content in the .pdf. 
+Then use =org-insert-link= (by default =C-c C-l=) to create a link to this page and this place on the page:
+#+begin_example
+[[pdf:~/file.pdf::5++0.00;;annot-5-0][file.pdf: Page 5; Quoting: some text]]
+#+end_example
+
+* Current features
+The provided function includes:
+- [X] (Sort-of) backward compatibility with org-pdfview: simply change the link prefix from
+  ~pdfview:~ to ~pdf:~.
+- [X] The reason this URL prefix change was proposed is that ~pdftools:~ links can
+  also point to ~pdf-occur~ searchs. Multi-file search is also supported.
+- [X] There is also support for ~pdf-isearch~.
+- [X] Beyond the original link implementation that stores only file path and page
+  number, now you can store the precise location of annotations.
+- [X] If there are selected texts on the current PDF page, it will be ~marked-up~
+  using pdf-tools markup functions (by default, underline) automatically and the
+  corresponding annotation id is stored in the link.
+
+- HTML exported link now have a "#page=n" postfix, which should make browsers like Chrome open the corresponding page.
+- You can now customize the link description format using ~org-pdftools-get-desc-function~
+- Added ~org-noter-pdftools-embed-org-note-to-pdf~, ~org-noter-pdftools-embed-all-org-note-to-pdf~ to copy one or all *org-noter annotation headings* (the ones with a ~annot-id~ and ~org-pdftools link~) to the corresponding PDF file.
+- Added ~org-noter-pdftools-embed-org-buffer-to-pdf~ to copy the whole *org-noter* buffer to a annotation in the left upper corner of the first page in the PDF.
+- Added ~org-noter-pdftools-jump-to-note~ config in the README.
+- The prefix of pdftools link can now be customized using ~org-pdftools-link-prefix~, and the default is now set to "pdf"
+- The ~org-pdftools-search-string-separator~ is now set to ~??~ to avoid org fontification problem
+- You can now specify how the path of pdf is stored using two function:
+- ~org-pdftools-path-generator~ takes ~buffer-file-name~ as an argument, and output a translated path. Default to ~abbreviate-file-name~
+- ~org-pdftools-path-resolver~ takes a translated path as an argument and translate it back to absolute path. Default to ~expand-file-name~
+
+
+* Integration with ~org-noter~
+You can use the vanilla ~org-noter~ now.
+
+- [X] Integrate with ~org-noter~, such that ~org-noter~ can remember the precise
+  location (in the resolution of the exact annotation).
+- [X] Jump from a PDF annotation to a associated org-heading ~org-noter-sync-*~ and
+  ~org-noter-jump-to-heading~.
+- [X] Transform old org-noter notes to newer ones and sync with the corresponding
+  PDF. ~org-noter-convert-old-notes~
+- [-] PDF annotation will have full and synced information with the associated
+  org-note. (Besides the note content, each annotate will record the IDs of the
+  corresponding org heading and potentially even it's parent org heading, such
+  that tree-rebuild is possible.)
+
+* Planed features
+This is the first step of a set of overhauls of Emacs PDF notetaking experience.
+The features below are planned (either in this package or as PR to other
+packages):
+- [-] Optionally grab image/text excerpt from the PDF and insert below the
+  corresponding org-heading.
+  Please refer to ~pdf-view-extract-region-image~, not sure what's the best way
+  to integrate it.
+- [ ] Link export with image/text-based excerpt from the PDF.
+- [ ] (Long-term) Org <-> PDF Annotation converter.

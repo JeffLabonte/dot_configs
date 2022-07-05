@@ -1,0 +1,63 @@
+;;; EMU-ELS --- list of EMU modules to install. -*-Emacs-Lisp-*-
+
+;;; Commentary:
+
+;; APEL-MK imports `emu-modules' and `emu-modules-to-compile' from here.
+
+;;; Code:
+
+(defvar emu-modules-not-to-compile nil)
+(defvar emu-modules-to-compile nil)
+
+;; We use compile-time evaluation heavily.  So, order of compilation is
+;; very significant.  For example, loading some module before compiling
+;; it will cause "compile-time" evaluation many times.
+(defvar emu-modules
+  (nconc
+   ;; modules are sorted by compilation order.
+   '(static broken)
+
+   ;; product information.
+   '(product apel-ver)
+
+   ;; poe modules; poe modules depend on static.
+   '(pym poe)
+
+   ;; pcustom modules; pcustom modules depend on poe.
+   '(pcustom)
+
+   ;; pccl modules; pccl modules depend on broken.
+   '(pccl-20 pccl)
+
+   ;; pces modules; pces modules depend on poe.
+   ;; pces-e20 depends pces-20, so we compile pces-20 first.
+   '(pces-20 pces-e20 pces)
+
+   ;; poem modules; poem modules depend on pces.
+   '(poem-e20_3 poem-e20 poem)
+
+   ;; mcharset modules; mcharset modules depend on poem and pcustom.
+   ;; mcs-e20 depends mcs-20, so we compile mcs-20 first.
+   '(mcs-20 mcs-e20 mcharset)
+
+   ;; invisible modules; provided for backward compatibility with old "tm".
+   '(inv-23 invisible)
+
+   ;; emu modules; provided for backward compatibility with old "tm".
+   '(emu)
+
+   ;; emu submodules; text/richtext and text/enriched support.
+   '(richtext)
+
+   ;; mule-caesar.el; part of apel-modules, but it is version-dependent.
+   '(mule-caesar)))
+
+;; Generate `emu-modules-to-compile' from `emu-modules-not-to-compile'
+;; and `emu-modules'.
+(let ((modules emu-modules-not-to-compile))
+  (setq emu-modules-to-compile (copy-sequence emu-modules))
+  (while modules
+    (setq emu-modules-to-compile (delq (car modules) emu-modules-to-compile)
+	  modules (cdr modules))))
+
+;;; EMU-ELS ends here

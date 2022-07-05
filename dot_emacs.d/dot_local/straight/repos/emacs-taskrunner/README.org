@@ -1,0 +1,109 @@
+* Emacs Taskrunner
+This is an elisp library which aims to provide a way to retrieve all of the
+tasks/targets from various build systems and execute them in a compilation buffer.
+
+The ultimate goal is to use this library to provide the data necessary for an
+interactive interface through helm/ivy/ido which will let the user select tasks
+and run them. Additionally, it will also provide a task caching mechanism so the
+tasks do not have to be retrieved over and over again.
+
+*Warning*: I have not worked with most of these build systems/taskrunners but
+ support has been provided for them. Since my knowledge is fairly elementary, I
+ might miss some subtleties. If you have any advice then please feel free to
+ open a pull request/issue on this repository. Thanks
+ 
+* Installation
+To install this library, you will need the following dependencies:
+- Emacs version 25.1 and above
+- [[https://github.com/bbatsov/projectile][projectile]] 
+- [[https://github.com/jwiegley/emacs-async][emacs-async]] 
+
+In addition, you will also need to install one(or more if you would like) of
+these frontends:
+- [[https://github.com/emacs-taskrunner/ivy-taskrunner][ivy-taskrunner]] 
+- [[https://github.com/emacs-taskrunner/helm-taskrunner][helm-taskrunner]] 
+- Ido frontend is still in progress. Please use one of the other 2 for now.
+* Project Status
+Currently, this project is stable. It makes quite a lot of assumptions about
+build/taskrunner configuration files being present at the root only and not
+nested in the file hierarchy of the project.
+** Supported Systems
+It can be used for the following systems/frontends listed below.
+*** Currently supported
+**** Build/Task Systems
+- [X] yarn/npm
+- [X] Gulp
+- [X] Grunt
+- [X] Gradle
+- [X] Jake
+- [X] Apache ant
+- [X] mix
+- [X] leinengen
+- [X] rake
+- [X] Make
+- [X] CMake
+- [X] Meson/Ninja
+- [X] [[https://github.com/go-task/task][go-task]] 
+- [X] [[https://github.com/magefile/mage][mage]] 
+- [X] [[https://github.com/pydoit/doit][doit]] 
+- [X] [[https://github.com/jakedeichert/mask][mask]] 
+- [X] [[https://github.com/casey/just][just]] 
+- [X] [[https://github.com/sagiegurari/cargo-make][cargo-make]]
+- [X] [[https://buidler.dev/][buidler]] 
+- [X] [[https://github.com/rliebz/tusk][Tusk]] 
+- [X] [[https://dnephin.github.io/dobi/install.html][dobi]] 
+- [X] cargo(Limited Support)
+- [X] go compiler(Limited support)
+- [X] Cask(Limited Support)
+- [X] stack(Limited Support)
+- [X] cabal(Limited Support)
+**** User interfaces
+- [X] ivy
+- [X] helm
+- [ ] ido (Work in progress. Coming Soon!)
+** Planned improvements
+- [ ] Use ripgrep/ag/grep to locate task files. This will help find nested
+  Makefiles and other task files which need to be parsed.
+- [ ] Add Smart/Dumb support. Smart support will use ripgrep/ag/grep and "Dumb"
+  support will work very similarly to the way it is done now. This is if the
+  user does not have any of those installed or they would not like to spawn too
+  many ripgrep/ag/grep processes on their system.
+- [ ] Add support for more taskrunners/build systems.
+*** Planning to add support for
+- [ ] Apache maven
+- [ ] [[https://waf.io/][waf]] 
+- [ ] [[https://github.com/pantsbuild/pants][pants]] 
+- [ ] [[https://github.com/reisraff/phulp][phulp]] 
+- [ ] [[https://github.com/zaaack/foy][foy]] 
+- [ ] tasks.json(VSCode)
+- [ ] Ninja
+- [ ] sbt
+- [ ] Buck
+- [ ] Bazel
+- [ ] msbuild(Maybe)
+* API
+The API for taskrunner is slowly being documented [[file:api-doc.org][here]]. It is not yet complete
+but the majority of the basics are there.
+* Design Choices
+** Async vs Sync
+This library comes with both sync and async functions. Originally, everything
+worked synchronously but obviously Emacs froze and was unresponsive. For most
+taskrunners/build systems, it took only 1-3 seconds for the tasks to be
+retrieved. On the other hand most Java based systems(gradle is the worst) will
+take 5-9 seconds to start up and spit out a list of tasks. As a result,
+~emacs-async~ was used as a way to avoid freezing the UI while tasks were being
+retrieved. 
+
+Under the hood, this whole library is synchronous and starts synchronous
+processes in order to coordinate the way tasks are retrieved. Most projects use
+a single build system/taskrunner but for others(web projects for example) might
+use multiple(gulp and package.json/npm scripts and so on...). If the tasks are
+retrieved asynchronously from the start then it becomes very difficult to
+synchronize the way the tasks are added to caches and might cause data
+races. Emacs 26 brought mutexes but those will freeze the UI as well while they
+are waiting.
+** Threads vs ~emacs-async~ 
+Emacs 26 brough threads but they are cooperative. This means that processes
+which take a long time(cough, cough, Gradle and its daemon) will still freeze
+the UI even when being ran on a separate thread. Due to this, ~emacs-async~ is
+used even though the Emacs which runs this library might have threads available.

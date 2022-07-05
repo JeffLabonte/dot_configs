@@ -1,0 +1,3 @@
+(citar :repo "emacs-citar/citar"
+       :fetcher github
+       :old-names (bibtex-actions))

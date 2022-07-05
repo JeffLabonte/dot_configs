@@ -1,0 +1,1 @@
+(docstr :repo "emacs-vs/docstr" :fetcher github :files (:defaults "langs/*.el"))

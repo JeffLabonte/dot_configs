@@ -1,0 +1,10 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[remote "origin"]
+	url = https://codeberg.org/ideasman42/emacs-undo-fu-session.git
+	fetch = +refs/heads/*:refs/remotes/origin/*

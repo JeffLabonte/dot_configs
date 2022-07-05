@@ -1,0 +1,854 @@
+This is
+/Users/jflabonte/.emacs.d/.local/straight/build-28.1/semi/mime-ui-ja.info,
+produced by makeinfo version 4.8 from
+/Users/jflabonte/.emacs.d/.local/straight/repos/semi/mime-ui-ja.texi.
+
+INFO-DIR-SECTION GNU Emacs Lisp
+START-INFO-DIR-ENTRY
+* SEMI-EPG (ja): (mime-ui-ja).      MIME user interface.
+END-INFO-DIR-ENTRY
+
+
+File: mime-ui-ja.info,  Node: Top,  Next: Introduction,  Prev: (dir),  Up: (dir)
+
+SEMI-EPG 1.14 説明書
+***********************
+
+This file documents SEMI-EPG, a MIME user interface for GNU Emacs.
+
+   GNU Emacs 用の MIME user interface である SEMI-EPG
+について説明します。
+
+* Menu:
+
+* Introduction::                SEMI-EPG って何？
+* MIME-View::                   MIME message の閲覧
+* MIME-Edit::                   MIME message の編集
+* Various::                     その他
+* Concept Index::               概念索引
+* Function Index::              関数索引
+* Variable Index::              変数索引
+
+
+File: mime-ui-ja.info,  Node: Introduction,  Next: MIME-View,  Prev: Top,  Up: Top
+
+1 SEMI-EPG って何？
+***********************
+
+SEMI は GNU Emacs 用の MIME user interface を提供する package
+です。 SEMI-EPG は SEMI のバリアントの一つで、 EasyPG
+や最新バージョンの Emacs
+への対応などを特徴とします。
+
+   SEMI が提供する MIME user interface は MIME-View と MIME-Edit
+からなりま す。
+
+   MIME-View は MIME や STD 11 および『地域化された RFC
+822』message を表示 したり、操作したりするための user
+interface の中� �です。
+
+   MIME-Edit は MIME message を生成するための user interface
+です。
+
+   各 MUA
+でこれらの機能を利用することにより、高度な MIME
+機能を利用するこ とができます。
+
+
+File: mime-ui-ja.info,  Node: MIME-View,  Next: MIME-Edit,  Prev: Introduction,  Up: Top
+
+2 MIME message の閲覧
+************************
+
+MIME-View は GNU Emacs で動作する汎用的な MIME viewer
+です。
+
+   MIME-View は MIME message を閲覧するための利用者界面
+(user interface) の� �であり、この上で presentation-method
+と呼ばれる表示を作るプログラ� 
+を動かしたり、acting-method と呼ばれる entity
+の処理プログラ� を動かす
+ことが可能で、さまざまな種類の entity
+を扱う事ができるようになっています。
+
+* Menu:
+
+* Overview of MIME-View::       MIME-View 概説
+* MIME-Preview::                mime-preview-buffer の画面構成
+* mime-view-mode::              mime-preview-buffer での操作
+
+
+File: mime-ui-ja.info,  Node: Overview of MIME-View,  Next: MIME-Preview,  Prev: MIME-View,  Up: MIME-View
+
+2.1 MIME-View 概説
+====================
+
+Internet の電子書簡・ネットニュースなどの書面
+(message) の表現形式は STD 11 に基づいています。STD 11
+の書面本体 (message body) は行を唯一の構� と
+する簡易文面 (plain text) であり、文字符号も us-ascii
+と定められています。 実際には、文字符号を us-ascii
+の代わりにその言語圏で用いられる文字符号と
+した『地域化された STD
+11』書面も用いられてきましたが、この� �合も書面の
+文字符号は１つです。このため、利用者界面 (Message
+User Agent) は、しばし ば、byte 列 = us-ascii
+文字列、ないしは、byte 列 = その言語圏で用いる文
+字符号の文字列のように見倣してきました。
+
+   しかしながら、MIME では書面は entity
+を単位とする木構� になり、また、１
+つの書面で複数の文字符号を用いることができます。また、entity
+の内容は文
+面や絵のような単純に表示可能なもの� けでなく、音声や動画などの一定時間再
+生されるようなものや特定のアプリケーションのデータやプログラ� のソース、
+あるいは、ftp や mail service の利用法や URL
+といった形で表された外部参
+照などのさまざまなものが考えらます。このため、表示� けを考えていた
+STD 11 における利用者界面の単純な延長では MIME
+の全ての機能を扱うことはでき ません。つまり、MIME
+の形式に合わせて復号する� けでは不十分であり、利用
+者との対話的な再生処理を考慮する必要があります。MIME
+書面の形式は自動処
+理がしやすく設計されていますが、MIME
+書面に含まれる内容の中にはセキュリ
+ティー上の問題から自動処理をするべきでないものがあり、こういったものの再
+生に関しては利用者の判断を仰ぐように設計されるべきでしょう。結局、MIME
+書面を扱うためには STD 11 および MIME
+の構文で記述されたメッセージの情� �
+交換用表現とその解釈結果である表示画面や再生等の処理を区別して考える必要
+があります。また、利用者との対話的な再生処理が必要です。
+
+   このため、MIME-View
+は１つの書面に対して、情� �交換用表現を� �納する
+mime-raw-buffer と表示用表現を� �納する mime-preview-buffer
+の２つの buffer を用います。
+
+   MIME-View は mime-preview-buffer に対して mime-view-mode
+という MIME message を閲覧するための mode
+を提供します。利用者はここで各 entity に
+対して操作を行うことができます。
+
+
+File: mime-ui-ja.info,  Node: MIME-Preview,  Next: mime-view-mode,  Prev: Overview of MIME-View,  Up: MIME-View
+
+2.2 mime-preview-buffer の画面構成
+=======================================
+
+mime-view-mode では各 entity に対して
+
+     	[entity-button]
+     	(header)
+
+     	(body)
+     	(separator)
+
+という情� �を表示します。これらは条件に従って
+design を変更したり、表示
+を抑制することもできます。
+
+   以下に、表示例を示します。
+
+     From: morioka@jaist.ac.jp (守岡 知彦 / MORIOKA Tomohiko)
+     Subject: Re: 質問？
+     Newsgroups: zxr.message.mime
+     Date: 22 Oct 93 11:02:44
+     Mime-Version: 1.0
+     Organization: Japan Advanced Institute of Science and Technology,
+             Ishikawa, Japan
+
+     [1  (text/plain)]
+       MIME-Edit mode における、MIME message の作り方。
+
+       C-c C-x ? を押すと help が出てくる。
+
+     C-c C-x C-t	insert a text message.
+     C-c C-x TAB	insert a (binary) file.
+     C-c C-x C-e	insert a reference to external body.
+     C-c C-x C-v	insert a voice message.
+     C-c C-x C-y	insert a mail or news message.
+     C-c C-x RET	insert a mail message.
+     C-c C-x C-s	insert a signature file at end.
+     C-c C-x t	insert a new MIME tag.
+     C-c C-m C-a	enclose as multipart/alternative.
+     C-c C-m C-p	enclose as multipart/parallel.
+     C-c C-m C-m	enclose as multipart/mixed.
+     C-c C-m C-d	enclose as multipart/digest.
+     C-c C-m C-s	enclose as PGP signed.
+     C-c C-m C-e	enclose as PGP encrypted.
+     C-c C-x C-k	insert PGP public key.
+     C-c C-x p	preview editing MIME message.
+     ...
+
+     って訳で、C-c C-x C-i を押して、挿入したい binary file を指定します。
+
+       binary file の MIME encoding には、普通、Base64 を指定します。
+
+     [2  (image/gif)]
+
+     [3  (text/plain)]
+
+       こんな風に、絵入り message のでき上がり。
+
+     〓〓〓〓〓〓〓〓〓〓〓 ロシアン・ティーを一杯。 〓〓〓〓〓〓〓〓〓〓〓
+     〓〓〓〓〓  ☆ ジャ� ではなくマーマレードでもなく蜂蜜で ☆  〓〓〓〓〓
+     〓〓〓〓〓         МО� いОКА  ТОМОХИКО         〓〓〓〓〓
+     〓〓〓〓〓〓〓  Internet E-mail: <morioka@jaist.ac.jp>  〓〓〓〓〓〓〓
+
+* Menu:
+
+* entity-button::
+* entity-header::
+* entity-body::
+
+
+File: mime-ui-ja.info,  Node: entity-button,  Next: entity-header,  Prev: MIME-Preview,  Up: MIME-Preview
+
+2.2.1 entity-button
+-------------------
+
+*entity-button* は entity の先� �にあって、その entity
+に関する大 まかな情� �を表示する部分です。
+
+   標準では
+
+             [1.3 test (text/plain)]
+
+のような感じに表示されます。
+
+   最初の数字は message 中のこの entity
+の位置を節番号のように表したもので、 *entity-number*
+と呼びます。
+
+   ２番目の文字列は表題を表します。この情� �は、
+
+  1. Content-Description field もしくは Subject field
+     に書かれた表題
+
+  2. Content-Disposition field の filename parameter に書かれた
+     file 名
+
+  3. Content-Type field の name parameter に書かれた file 名
+
+  4.  uuencode の� �合の file 名
+
+から作ります。どれも存在しない� �合は空白が表示されます。
+
+   ３番目の括弧の中の情� �はその entity の
+media-type/subtype を表します。非 MIME entity の� �合、`nil'
+が表示されます。
+
+   この entity-button は entity の内容を象徴する icon
+のような役割を果た します。例えば、
+
+             [2  (image/gif)]
+
+の上で `v'
+を押せばここに入っている絵が表示されます。
+
+   また、mouse 操作が可能な� �合、entity-button
+を第２ボタン（3 button mouse
+の� �合、中央のボタン）で押せば、同様にその絵が表示されます。
+
+
+File: mime-ui-ja.info,  Node: entity-header,  Next: entity-body,  Prev: entity-button,  Up: MIME-Preview
+
+2.2.2 entity-header
+-------------------
+
+*entity-header* はある entity の header を表示する部
+分です（「そのままやんけ」って怒らないで。そういうもんなんです）。
+
+
+File: mime-ui-ja.info,  Node: entity-body,  Prev: entity-header,  Up: MIME-Preview
+
+2.2.3 entity-body
+-----------------
+
+*entity-body* は part の内容を表示する部分です。
+
+これもひねりが足りないですが、まあ、そういうもんです。
+
+   とはいえ、実際には少しひねってます。
+
+   text entity の� �合は charset に応じて code
+変換したりしますし、XEmacs で は image entity
+を変換しないといけないし。
+
+   詳しくはまた後で。
+
+
+File: mime-ui-ja.info,  Node: mime-view-mode,  Prev: MIME-Preview,  Up: MIME-View
+
+2.3 mime-preview-buffer での操作
+====================================
+
+mime-preview-buffer には以下の機能があります。
+
+`<u>'
+     上の part に戻る（message の一番上の part
+     でこれを行なうと Summary mode に戻る (*1)）
+
+`<p>'
+     前の part に移動する
+
+`<M-TAB>'
+     前の part に移動する
+
+`<n>'
+     次の part に移動する
+
+`<TAB>'
+     次の part に移動する
+
+`<SPC>'
+     scroll up する
+
+`<M-SPC>'
+     scroll down する
+
+`<DEL>'
+     scroll down する
+
+`<RET>'
+     次の行に移動する
+
+`<M-RET>'
+     前の行に移動する
+
+`<v>'
+     part を再生する (*2)
+
+`<e>'
+     part から file を取り出す (*2)
+
+`<C-c C-p>'
+     part を印刷する (*2)
+
+`<mouse-button-2>'
+     preview-buffer 中の mouse button を起動する
+
+     content-button を押せば、その part が再生される(*2)
+
+     URL-button を押せば、その WWW browser が起動される
+
+
+*[注意]*
+
+     (*1) MUA で mime-view の設定をしていない� �合、Summary
+     mode には戻りませ ん。
+
+     (*2) 実際の動作は対応する method に依ります。
+
+
+File: mime-ui-ja.info,  Node: MIME-Edit,  Next: Various,  Prev: MIME-View,  Up: Top
+
+3 MIME message の編集
+************************
+
+*MIME-Edit* は GNU Emacs で動作する汎用的な MIME composer
+です。
+
+* Menu:
+
+* mime-edit-mode::              MIME message を編集するための minor-mode
+* single-part tags::            single-part に対する操作
+* enclosure tags::              enclosure に対する操作
+* other MIME-Edit operations::  mime-edit-mode におけるその他の操作
+* file-type specification::     挿入される file に対する tag の決定
+* transfer level::
+* message/partial sending::     Splitting
+
+
+File: mime-ui-ja.info,  Node: mime-edit-mode,  Next: single-part tags,  Prev: MIME-Edit,  Up: MIME-Edit
+
+3.1 MIME message を編集するための minor-mode
+====================================================
+
+*mime-edit-mode* は MIME message を作成するための minor-mode
+です。 この mode では *tag* を使ってさまざまな種類の
+data を表現し、さま ざまな種類の data
+からなる複数の部分からなる message
+を編集することを可 能にしています。
+
+   tag には
+
+   *  single-part tag
+
+   *  multi-part tag
+
+の２つがあります。
+
+   single-part tag は single part を表現するための tag で、
+
+             --[[TYPE/SUBTYPE;PARAMETERS][ENCODING]
+             OPTIONAL-FIELDS]
+
+というような形をしています。
+
+   TYPE/SUBTYPE および PARAMETERS は Content-Type (*Note
+Content-Type: (mime-ja)Content-Type.) 欄の type/subtype および
+parameters を表します。 TYPE/SUBTYPE
+は必� �であり、PARAMETERS は省略可です。
+
+   ENCODING は Content-Transfer-Encoding (*Note
+Content-Transfer-Encoding: (mime-ja)Content-Transfer-Encoding.)
+欄を表しま す。これも省略可です。
+
+   OPTIONAL-FIELDS は Content-Type, Content-Transfer-Encoding
+以外の field を書くための部分で、省略可です。
+
+   multi-part tag は multi part を表現するための tag で、
+
+             --<<TYPE>>-@{
+
+という形の *multi-part 開始 tag* と呼ばれる multi part
+の開始を示す tag と
+
+             --@}-<<TYPE>>
+
+という形の *multi-part 終了 tag* と呼ばれる multi part
+の終了を示す tag があります。
+
+   また、multi-part 開始 tag と multi-part 終了 tag
+で囲まれた部分を *enclosure* と呼びます。
+
+
+File: mime-ui-ja.info,  Node: single-part tags,  Next: enclosure tags,  Prev: mime-edit-mode,  Up: MIME-Edit
+
+3.2 single-part に対する操作
+==================================
+
+single-part
+を作るための操作には以下のようなものがあります。
+
+`<C-c C-x C-t>'
+     text part を表す single-part tag を挿入します。
+
+`<C-c C-x C-i>'
+     file を MIME part として添付します。前に `C-u'
+     を付けた� �合、常に media-type, subtype
+     等を聞いて来ます。(cf. *Note file-type specification::)
+
+`<C-c C-x C-e>'
+     external part を挿入します。
+
+`<C-c C-x C-v>'
+     `C-g' が押されるまで録音を行い、音声 part
+     を挿入します。（使 用できない� �合があります）
+
+`<C-c C-x C-y>'
+     現在表示中の (mail or news) message
+     を挿入します。（実際の動作は使用し ている MUA
+     に依存します）
+
+`<C-c C-x C-m>'
+     mail message を挿入します。
+
+`<C-c C-x C-w>, <C-c C-x C-s>'
+     signature を挿入します。
+
+`<C-c C-x C-k>'
+     PGP (*Note PGP::) の公開鍵を挿入します。
+
+`<C-c C-x t>'
+     任意の single-part tag を挿入します。
+
+
+
+File: mime-ui-ja.info,  Node: enclosure tags,  Next: other MIME-Edit operations,  Prev: single-part tags,  Up: MIME-Edit
+
+3.3 enclosure に対する操作
+================================
+
+enclosure
+を作るための操作としては以下のようなものがあります。
+
+`<C-c C-m C-a>'
+     指定した region を multipart/alternative
+     として囲みます。
+
+`<C-c C-m C-p>'
+     指定した region を multipart/parallel として囲みます。
+
+`<C-c C-m C-m>'
+     指定した region を multipart/mixed として囲みます。
+
+`<C-c C-m C-d>'
+     指定した region を multipart/digest として囲みます。
+
+`<C-c C-m C-s>'
+     指定した region に電子署名を行います。(cf. *Note
+     PGP::)
+
+`<C-c C-m C-e>'
+     指定した region を暗号化します。(cf. *Note PGP::)
+
+`<C-c C-m C-q>'
+     指定した region 内の tag を無効にし、その tag
+     を文字列として利用できる
+     ようにします。（現在の版ではうまく働かないことがあります。また、電子署
+     名との併用に関しても不完全です）
+
+
+
+File: mime-ui-ja.info,  Node: other MIME-Edit operations,  Next: file-type specification,  Prev: enclosure tags,  Up: MIME-Edit
+
+3.4 mime-edit-mode におけるその他の操作
+=================================================
+
+mime-edit-mode におけるその他の操作を説明します。
+
+`<C-c C-c>'
+     編集中の message を送信します。
+
+`<C-c C-x p>'
+     編集中の message を preview します。(cf. *Note
+     MIME-View::)
+
+`<C-c C-x C-z>'
+     編集中の message を送信することなく、mime-edit-mode
+     を終了します。
+
+`<C-c C-x />'
+     大きな message を送信する� �合に message/partial
+     形式に自動分割可能とす るかどうかを決めます。
+
+`<C-c C-x 7>'
+     transfer level (*Note transfer level::) を 7bit (*Note 7bit:
+     (mime-ja)7bit.) にします。
+
+`<C-c C-x 8>'
+     transfer level (*Note transfer level::) を 8bit (*Note 8bit:
+     (mime-ja)8bit.) にします。
+
+`<C-c C-x v>'
+     message
+     全体を電子署名するかどうかを決めます。(cf.
+     *Note PGP::)
+
+`<C-c C-x h>'
+     message 全体を暗号化するかどうかを決めます。(cf.
+     *Note PGP::)
+
+`<C-c C-x ?>'
+     help message を表示します。
+
+
+
+File: mime-ui-ja.info,  Node: file-type specification,  Next: transfer level,  Prev: other MIME-Edit operations,  Up: MIME-Edit
+
+3.5 挿入される file に対する tag の決定
+===================================================
+
+`C-c C-x C-i' (`mime-edit-insert-file')
+を実行した時、挿入され る file に対する media-type や
+encoding などの tag の情� �は変数 `mime-file-types'
+によって file 名から推測されます。
+
+   前に `C-u'
+を付けた時、および、適当な値が見付からなかった� �合、user
+に対して値の入力を促します。（前に `C-u'
+を付けた時、推測された値が
+既定値として用いられます）
+
+   file 名に対する既定値を変えたい� �合は変数
+`mime-file-types' を設定して下さい。
+
+ -- Variable: mime-file-types
+     挿入される file の file 名に対する tag
+     の既定値を与える。
+
+     この変数は
+
+          	(FILE_PAT TYPE SUBTYPE PARAMS ENCODING
+          	 DISPOSITION_TYPE DISPOSITION_PARAMS)
+
+     という list の list
+     で、各要� は以下の通りである：
+
+    `FILE_PAT'
+          file 名を表す正規表現
+
+    `TYPE'
+          media type
+
+    `SUBTYPE'
+          media subtype
+
+    `PARAMS'
+          Content-Type field の parameter
+
+    `ENCODING'
+          Content-Transfer-Encoding
+
+    `DISPOSITION_TYPE'
+          disposition-type
+
+    `DISPOSITION_PARAMS'
+          Content-Disposition field の parameter
+
+
+     設定例： `*.rtf' に対する media type を application/rtf
+     に する� �合
+
+          (eval-after-load
+              "mime-edit"
+            '(set-alist 'mime-file-types
+          	      "\\.rtf$"
+          	      '("application" "rtf" nil nil
+          		"attachment" (("filename" . file)))
+          	      ))
+
+
+File: mime-ui-ja.info,  Node: transfer level,  Next: message/partial sending,  Prev: file-type specification,  Up: MIME-Edit
+
+3.6 transfer level
+==================
+
+message に挿入する data は 7bit (*Note 7bit: (mime-ja)7bit.)
+ないし 8bit (*Note 8bit: (mime-ja)8bit.) もしくは binary (*Note
+binary: (mime-ja)binary.) で表現することができます。
+
+   よって、7bit しか通さない MTA (*Note MTA: (mime-ja)MTA.)
+を経 由する� �合、7bit の data
+はそのままで送れますが、8bit や binary の data は 7bit
+に変換しなければなりません。
+
+   同様に、8bit しか通さない MTA を経由する� �合、7bit
+や 8bit の data はそ のままで送れますが、binary の data
+は 7bit か 8bit に変換しなければなり ません。
+
+*[Memo]*
+
+     EBCDIC しか通さない MTA を経由する� �合、7bit の
+     data も base64 等で変
+     換しないと送れませんが、私は EBCDIC
+     のことまでは知りません。(^_^;
+
+     同様に、制御文字を通さない MTA のことや code
+     変換を行なう MTA も消えてな
+     くなって欲しいです。(^_^;
+
+     binary も通す MTA
+     も存在するんでしょうが、今のところあまり一般的とはいえ
+     ないでしょう。
+
+   *transfer level* というのはどの範囲の data
+まで送れるか ということを表すものです。mime-edit は
+`mime-transfer-level' という変数を持っており、これで
+transfer level を表現します。
+
+ -- Variable: mime-transfer-level
+     transfer level を表す。
+
+     ある data の transfer level
+     がこの値を越える� �合、7bit data への変換が行
+     われる。
+
+     現在のところ、7 か 8 が有効である。既定値は 7
+     である。
+
+     EBCDIC を 5, ASCII printable のみを 6, binary を 9
+     とすることを計画して
+     いるが、実装の予定はない。
+
+*[Memo]*
+
+     transfer level は message header (*Note entity-header::)
+     には関係しない。 MIME は body において、8bit の
+     data を使えるように STD 11 (*Note STD 11: (mime-ja)STD 11.)
+     を拡張しているが、message header では us-ascii (*Note
+     us-ascii: (mime-ja)us-ascii.) のみを用いることを求
+     めている。
+
+
+File: mime-ui-ja.info,  Node: message/partial sending,  Prev: transfer level,  Up: MIME-Edit
+
+3.7 Splitting
+=============
+
+ -- Variable: mime-edit-split-message
+     Non-nil
+     ならば大きなメッセージを分割して送信します。
+
+ -- Variable: mime-edit-message-default-max-lines
+     メッセージの最大行数のデフォルト値です。
+
+ -- Variable: mime-edit-message-max-lines-alist
+     メジャーモード対メッセージの最大行数から成る連想リストです。
+
+     メジャーモードがここで指定されてない� �合には
+     `mime-edit-message-default-max-lines' を用います。
+
+ -- Variable: mime-edit-split-blind-field-regexp
+     分割送信の際に無視されるフィールド名にマッチする正規表現です。
+
+
+File: mime-ui-ja.info,  Node: Various,  Next: Concept Index,  Prev: MIME-Edit,  Up: Top
+
+4 その他
+***********
+
+* Menu:
+
+* PGP::                         暗号化、署名
+* Buttons::                     押釦
+* Acting-condition configuration::  実行条件の設定
+
+
+File: mime-ui-ja.info,  Node: PGP,  Next: Buttons,  Prev: Various,  Up: Various
+
+4.1 PGP
+=======
+
+mime-edit では EasyPG を利用した *PGP/MIME* (RFC 3156)
+による暗
+号化・電子署名・公開鍵の挿入機能を利用することができます。
+
+ -- Variable: mime-edit-pgp-verbose
+     When non-nil, ask the user about the current operation more
+     verbosely.
+
+ -- Variable: mime-edit-pgp-signers
+     署名時に優先的に使用する鍵 ID のリストです。
+
+ -- Variable: mime-edit-pgp-encrypt-to-self
+     non-nilの� �合、暗号化の際に送信者の鍵 ID を
+     recipient に含めます。
+     nilの� �合、送信者は暗号化した内容を通常は復号できません。
+
+ -- Variable: mime-edit-pgp-filtered-validities
+     A list of keys's validities which are used for neither signing nor
+     encrypting.
+
+
+File: mime-ui-ja.info,  Node: Buttons,  Next: Acting-condition configuration,  Prev: PGP,  Up: Various
+
+4.2 押釦
+==========
+
+ -- Variable: mime-button-face
+     MIME-Preview バッファで  content-button もしくは
+     URL-button  に用いる face です。
+
+ -- Variable: mime-button-mouse-face
+     MIME-preview
+     バッファでマウスをハイライトする際に用いる
+     face です。
+
+ -- Variable: mime-browse-url-function
+     URL をブラウズする関数です。
+
+
+File: mime-ui-ja.info,  Node: Acting-condition configuration,  Prev: Buttons,  Up: Various
+
+4.3 実行条件の設定
+=========================
+
+ -- Function: mime-add-condition target-type condition &optional mode
+          file
+     Add CONDITION to database specified by TARGET-TYPE.
+
+     TARGET-TYPE must be `preview' or `action'.
+
+     If optional argument MODE is `strict' or `nil' (omitted),
+     CONDITION is added strictly.
+
+     If optional argument MODE is `with-default', CONDITION is added
+     with default rule.
+
+     If optional argument FILE is specified, it is loaded when
+     CONDITION is activate.
+
+
+File: mime-ui-ja.info,  Node: Concept Index,  Next: Function Index,  Prev: Various,  Up: Top
+
+5 概念索引
+**************
+
+ [index ]
+* Menu:
+
+* enclosure:                             mime-edit-mode.        (line 6)
+* entity-body:                           entity-body.           (line 6)
+* entity-button:                         entity-button.         (line 6)
+* entity-header:                         entity-header.         (line 6)
+* entity-number:                         entity-button.         (line 6)
+* MIME-Edit:                             MIME-Edit.             (line 6)
+* mime-edit-mode:                        mime-edit-mode.        (line 6)
+* multi-part 終了 tag:                 mime-edit-mode.        (line 6)
+* multi-part 開始 tag:                 mime-edit-mode.        (line 6)
+* PGP/MIME:                              PGP.                   (line 6)
+* tag:                                   mime-edit-mode.        (line 6)
+* transfer level:                        transfer level.        (line 6)
+
+
+File: mime-ui-ja.info,  Node: Function Index,  Next: Variable Index,  Prev: Concept Index,  Up: Top
+
+6 関数索引
+**************
+
+ [index ]
+* Menu:
+
+* mime-add-condition:                    Acting-condition configuration.
+                                                                (line 8)
+
+
+File: mime-ui-ja.info,  Node: Variable Index,  Prev: Function Index,  Up: Top
+
+7 変数索引
+**************
+
+ [index ]
+* Menu:
+
+* mime-browse-url-function:              Buttons.              (line 16)
+* mime-button-face:                      Buttons.              (line  7)
+* mime-button-mouse-face:                Buttons.              (line 11)
+* mime-edit-message-default-max-lines:   message/partial sending.
+                                                               (line 11)
+* mime-edit-message-max-lines-alist:     message/partial sending.
+                                                               (line 14)
+* mime-edit-pgp-encrypt-to-self:         PGP.                  (line 18)
+* mime-edit-pgp-filtered-validities:     PGP.                  (line 23)
+* mime-edit-pgp-signers:                 PGP.                  (line 15)
+* mime-edit-pgp-verbose:                 PGP.                  (line 11)
+* mime-edit-split-blind-field-regexp:    message/partial sending.
+                                                               (line 20)
+* mime-edit-split-message:               message/partial sending.
+                                                               (line  7)
+* mime-file-types:                       file-type specification.
+                                                               (line 21)
+* mime-transfer-level:                   transfer level.       (line 40)
+
+
+
+Tag Table:
+Node: Top322
+Node: Introduction965
+Node: MIME-View1792
+Node: Overview of MIME-View2590
+Node: MIME-Preview5486
+Node: entity-button7885
+Node: entity-header9408
+Node: entity-body9721
+Node: mime-view-mode10235
+Node: MIME-Edit11466
+Node: mime-edit-mode12117
+Node: single-part tags13882
+Node: enclosure tags15076
+Node: other MIME-Edit operations16192
+Node: file-type specification17426
+Node: transfer level19248
+Node: message/partial sending21582
+Node: Various22377
+Node: PGP22651
+Node: Buttons23512
+Node: Acting-condition configuration24012
+Node: Concept Index24635
+Node: Function Index25660
+Node: Variable Index25962
+
+End Tag Table

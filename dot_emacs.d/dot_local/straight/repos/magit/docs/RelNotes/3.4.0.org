@@ -1,0 +1,61 @@
+* Magit v3.4.0 Release Notes (unreleased)
+** Breaking changes
+** Changes since v3.3.0
+
+- Added new function ~git-commit-turn-on-orglink~ intended for use in
+  ~git-commit-setup-hook~.
+
+- Some repository and submodule list columns got a bit fancier.
+
+- Refreshing a repository or submodule list buffer now restores the
+  previous position.
+
+- Added new face ~git-rebase-action~ to allow customization of the face
+  used for the action words in git-rebase-todo files.
+
+- New transient ~magit-sparse-checkout~ provides an interface to the
+  ~git sparse-checkout~ command, introduced in Git v2.25.  #4102
+
+- New command ~magit-clone-sparse~ makes it possible to clone a
+  repository and then immediately enable a sparse checkout, avoiding a
+  checkout of the full working tree.  #4102
+
+- The ~magit-clone~ transient now includes ~--filter~ (hidden by
+  default) to support partial cloning, a feature that is available as
+  of Git v2.17.  #4102
+
+- A cherry pick or revert can now be continued when there are unstaged
+  changes as long as there are no unresolved conflicts, a behavior
+  that more closely matches the command line behavior.  #4615
+
+** Fixes since v3.3.0
+
+- Automatic saving of file-visiting buffers was broken inside remote
+  repositories that are accessed using Tramp.  #4292
+
+- Worktree commands and listing worktrees in the status buffer were
+  broken inside remote repositories that are accessed using Tramp.
+  #4326
+
+- Due to a regression in v3.3.0 setting the mark did not highlight the
+  current and only selected section until a second section is selected.
+
+- Fixed calculation of gravatar image size.
+
+- The helper function ~magit-current-blame-chunk~ passed the directory
+  visited by a Dired buffer to ~git blame~, leading to some commands
+  (e.g., ~magit-checkout~) erroring when called from a Dired buffer.
+  #4560
+
+- For Helm users, calling ~magit-stash-drop~ on the "Stashes" section
+  has been broken since v3.0.0.  #4571
+
+- ~magit-discard~ didn't properly handle conflicts resulting from a
+  file being renamed on both sides.  #4225
+
+- Since v3.0.0, ~magit-pull-from-pushremote~ has failed on
+  non-fast-forward merges.  #4604
+
+- A regression from v3.2.0 broke visiting a file when that file has a
+  mode change and point is on the file or the mode change section.
+  #4623

@@ -1,0 +1,3 @@
+(xref-rst
+ :url "https://codeberg.org/ideasman42/emacs-xref-rst.git"
+ :fetcher git)

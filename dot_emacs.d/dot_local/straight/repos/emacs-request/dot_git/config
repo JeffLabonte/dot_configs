@@ -1,0 +1,13 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[remote "origin"]
+	url = https://github.com/tkf/emacs-request.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[submodule "doc/eldomain"]
+	active = true
+	url = https://github.com/tkf/sphinx-eldomain.git

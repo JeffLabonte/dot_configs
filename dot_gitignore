@@ -1,0 +1,7 @@
+**/.idea/
+**/.#*
+**/#*#
+**/*~
+
+**/flycheck*.py
+**/.ropeproject

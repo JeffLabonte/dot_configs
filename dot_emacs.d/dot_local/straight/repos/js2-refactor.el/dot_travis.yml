@@ -1,0 +1,28 @@
+language: emacs
+sudo: false
+
+before_install:
+  - sudo apt-get install python3
+  - export PATH="/home/travis/.evm/bin:$PATH"
+  - export PATH="/home/travis/.cask/bin:$PATH"
+  - git clone https://github.com/cask/cask /home/travis/.cask
+  - git clone https://github.com/rejeep/evm.git /home/travis/.evm
+  - evm config path /tmp
+  - evm install emacs-27.1-travis-linux-xenial --use --skip
+  - cask install
+
+env:
+  - TAGS="" EVM_EMACS=emacs-25.3-travis
+  - TAGS="" EVM_EMACS=emacs-26.3-travis
+  - TAGS="" EVM_EMACS=emacs-27.1-travis-linux-xenial
+  - TAGS="" EVM_EMACS=emacs-git-snapshot-travis
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: TAGS="" EVM_EMACS=emacs-git-snapshot-travis
+
+script:
+  # Check that cask is finding the right emacs
+  - cask emacs --version
+  - ./run-travis-ci.sh

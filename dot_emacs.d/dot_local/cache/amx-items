@@ -1,0 +1,19 @@
+
+;; ----- amx-history -----
+(
+ lsp-restart-workspace
+ doom/restart
+ lsp-mode
+ lsp-install-server
+ cd
+ wl
+ 5x5
+)
+
+;; ----- amx-data -----
+(
+ (lsp-restart-workspace . 4)
+ (lsp-install-server . 1)
+ (lsp-mode . 1)
+ (doom/restart . 1)
+)

@@ -1,0 +1,60 @@
+site_name: DAP Mode
+site_url: https://emacs-lsp.github.io/dap-mode
+
+nav:
+  - Home: README.md
+  - Features: page/features.md
+  - Configuration: page/configuration.md
+  - How to: page/how-to.md
+  - Tutorials:
+      - Clojure: page/clojure.md
+      - Python, debbuging with poetry + pyenv: page/python-poetry-pyenv.md
+  - Gallery:
+      - page/gallery.md
+  - Adding a new debug server: page/adding-debug-server.md
+  - Changelog:
+      - CHANGELOG.md
+  - LSP Mode:
+      - LSP Mode: https://emacs-lsp.github.io/lsp-mode
+
+extra_css:
+  - stylesheets/extra.css
+
+theme:
+  name: material
+  logo: screenshots/logo.png
+  favicon: screenshots/logo.png
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.tabs
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/emacs-lsp/dap-mode
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/yonchovski
+    - icon: fontawesome/brands/gitter
+      link: https://gitter.im/emacs-lsp/lsp-mode
+
+repo_name: emacs-lsp/dap-mode
+repo_url: https://github.com/emacs-lsp/dap-mode
+
+markdown_extensions:
+  - pymdownx.superfences
+  - codehilite
+  - toc:
+      permalink: '#'
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+plugins:
+  - search
+  - awesome-pages
+  - git-revision-date-localized
+
+google_analytics:
+  - UA-165661257-2
+  - auto

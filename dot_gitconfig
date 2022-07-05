@@ -1,0 +1,18 @@
+[alias]
+    	releasenote = "! fn() { git fetch --all; git log $(git describe --tags --abbrev=0 origin/master)..origin/master --format=\"- %s\"; }; fn"
+    	releasenote-main = "! fn() { git fetch --all; git log $(git describe --tags --abbrev=0 origin/main)..origin/main --format=\"- %s\"; }; fn"
+    	pmaster = "pull origin master"
+	local-clean = ! git r  emote update --prune | git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D
+	sync-remote = "! fn() { git pull origin $(git branch | grep \"master\\|main\"); }; fn"
+
+
+[user]
+	email = jflabonte@poka.io
+	name = Jean-Francois Labonte
+	signingkey = 135F1BA372FA31FC
+[commit]
+	gpgsign = true
+[gpg]
+	program = /opt/homebrew/bin/gpg
+[core]
+    excludesfile = /Users/jflabonte/.gitignore

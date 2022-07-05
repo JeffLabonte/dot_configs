@@ -1,0 +1,1720 @@
+This is
+/Users/jflabonte/.emacs.d/.local/straight/build-28.1/flim/mime-ja.info,
+produced by makeinfo version 4.8 from
+/Users/jflabonte/.emacs.d/.local/straight/repos/flim/mime-ja.texi.
+
+INFO-DIR-SECTION GNU Emacs Lisp
+START-INFO-DIR-ENTRY
+* FLIM-LB (ja): (mime-ja).         Internet message library.
+END-INFO-DIR-ENTRY
+
+
+File: mime-ja.info,  Node: Top,  Next: Introduction,  Prev: (dir),  Up: (dir)
+
+FLIM-LB 1.14 MIME 機能説明書
+*********************************
+
+This file documents MIME features of FLIM-LB, a fundamental library to
+process Internet Messages for GNU Emacsen.
+
+   GNU Emacsen 用の Internet Message 処理のための基礎 library
+である FLIM-LB の MIME 機能に関して説明します。
+
+* Menu:
+
+* Introduction::                FLIM-LB って何？
+* How to use::                  FLIM の MIME 機能の使い方
+* Entity::                      Message と Entity
+* Content-Type::                Content-Type 欄の情� �
+* Content-Disposition::         Content-Disposition 欄の情� �
+* Content-Transfer-Encoding::   符号化法
+* encoded-word::                Header の network 表現
+* custom::                      一般設定
+* Appendix::                    付録
+* Concept Index::               概念索引
+* Function Index::              関数索引
+* Variable Index::              変数索引
+
+
+File: mime-ja.info,  Node: Introduction,  Next: How to use,  Prev: Top,  Up: Top
+
+1 FLIM-LB って何？
+**********************
+
+FLIM は Internet Message
+の表現や符号化に関する基礎的な機能を提供する
+ための library です。 FLIM-LB は FLIM
+のバリアントの一つで、 最新バージョンの Emacs
+への対応などを特徴とします。
+
+
+File: mime-ja.info,  Node: How to use,  Next: Entity,  Prev: Introduction,  Up: Top
+
+2 FLIM の MIME 機能の使い方
+**********************************
+
+FLIM の提供する MIME 機能を使うためには
+
+     (require 'mime)
+
+を評価してく� さい。
+
+
+File: mime-ja.info,  Node: Entity,  Next: Content-Type,  Prev: How to use,  Up: Top
+
+3 Message と Entity
+********************
+
+RFC 2045 (*Note RFC 2045::) によれば、「Entity
+という語は、message, もしく は、multipart entity の body
+中の１つの部分の、MIME で定義された header field
+と内容を指す」となっています。ここでは、MIME
+で定義された header field 以外の全ての header と body
+を指す語として *entity*を用いる ことにします。
+
+   RFC 2045 の定義は、MIME message が entity
+を節とする木構� であることを示
+しています。つまり、MIME は message
+を木構� に拡張した訳です。
+
+   FLIM は entity の情� �を表現するために*mime-entity* 構
+� 体を用います。以下では単に mime-entity
+と呼ぶことにします。
+
+* Menu:
+
+* Entity creation::             Entity の生成
+* Entity hierarchy::            Entity 階層
+* Entity Search::               Entity の検索
+* Entity Attributes::           Entity の属性
+* Entity-header::               Entity header の情� �
+* entity formatting::           Entity の文字表現
+* Entity-content::              Entity の内容
+* Entity-network-representation::  Entity のネットワーク表現
+* Entity buffer::               Entity の buffer による表現
+* mm-backend::                  Entity の表現と実現
+
+
+File: mime-ja.info,  Node: Entity creation,  Next: Entity hierarchy,  Prev: Entity,  Up: Entity
+
+3.1 Entity の生成
+====================
+
+ -- Function: mime-open-entity type location
+     Entity を開いて、それを返します。
+
+     TYPE は representation-type です。(cf. *Note mm-backend::)
+
+     LOCATION は entity の位置です。指定方法は
+     representation-type に依って変わります。
+
+ -- Function: mime-parse-buffer &optional buffer type
+     BUFFER を message として構文解析し、その結果の
+     mime-entity を BUFFER の`mime-message-structure'
+     に� �納する。
+
+     BUFFER が省略された� �合、現在の buffer
+     を構文解析する。
+
+     TYPE が指定された� �合、その値を生成される
+     mime-entity の表象型とし
+     て用いる。省略された� �合は BUFFER となる。(cf.
+     *Note mm-backend::)
+
+
+File: mime-ja.info,  Node: Entity hierarchy,  Next: Entity Search,  Prev: Entity creation,  Up: Entity
+
+3.2 Entity 階層
+=================
+
+MIME message は entity
+を単位とする木構� になっています。
+
+   この木において� �となる節は message 全体を表す
+entity です。ここでは、こ れを *root-entity*
+もしくは*message* と呼びます。
+
+   root-entity 以外の entity は親を持ちます。また、entity
+は子供を持つかも
+知れません。この親子関係を考えることで entity
+の相対関係を扱うことができ ます。
+
+   一方、entity の message
+における位置を考えることもできます。
+
+   entity
+はこの木における節となりますが、この木には深さと同じ深さの中の
+� �番に従って番号が付けることができます。即ち、
+
+                                   ┌───┐
+                                   │  nil │
+                                   └─┬─┘
+                   ┌─────────┼─────────┐
+                 ┌┴┐              ┌┴┐              ┌┴┐
+                 │０│              │１│              │２│
+                 └┬┘              └┬┘              └┬┘
+                   │        ┌────┼────┐        │
+               ┌─┴─┐┌─┴─┐┌─┴─┐┌─┴─┐┌─┴─┐
+               │ ０.０││ １.０││ １.１││ １.２││ ２.０│
+               └───┘└───┘└───┘└───┘└───┘
+
+のように深さ n の節には長さ n
+の整数列の節番号が振れます。これ を *entity-number*
+と呼びます。entity-number は S 式と しては `(1 2 3)'
+のような整数のリストとして表現されます。
+
+   mime-entity では、これと同様の *node-id*
+を用います。node-id はちょ うど entity-number
+を逆にしたリストで、entity-number 1.2.3 に対応する
+node-id は `(3 2 1)' です。
+
+   前述のように、MIME message は entity
+を単位とした木構� になっているので、
+この� �である message 全体も mime-entity
+で表現することができ、buffer local 変数
+`mime-message-structure' に� �納することにします。
+
+   `mime-message-structure' を起点に entity-number や node-id
+で示される entity を取り出すことができます。
+
+ -- Variable: mime-message-structure
+     現在の buffer における message 全体の mime-entity
+     構� 体を� �納するbuffer local 変数。
+
+ -- Function: mime-entity-children entity
+     ENTITY に含まれる entity の list を返す。
+
+ -- Function: mime-entity-parent entity &optional message
+     ENTITY の親の entity を返す。
+
+     MESSAGE が指定された� �合、これを� �と見倣す。
+
+ -- Function: mime-root-entity-p entity
+     ENTITY が� �（即ち、message
+     全体）である� �合に、非-`nil' を返 す。
+
+ -- Function: mime-entity-node-id entity
+     ENTITY の node-id を返す。
+
+ -- Function: mime-entity-number entity
+     ENTITY の entity-number を返す。
+
+
+File: mime-ja.info,  Node: Entity Search,  Next: Entity Attributes,  Prev: Entity hierarchy,  Up: Entity
+
+3.3 Entity の検索
+====================
+
+ -- Function: mime-find-entity-from-number entity-number &optional
+          message
+     MESSAGE から、ENITY-NUMBER の entity を返します。
+
+     MESSAGE が指定されていない� �合は、
+     `mime-message-structrue' が使われます。
+
+ -- Function: mime-find-entity-from-node-id entity-node-id &optional
+          message
+     MESSAGE から、ENTITY-NODE-ID の entity を返します。
+
+     MESSAGE が指定されていない� �合は、
+     `mime-message-structure' が使われます。
+
+ -- Function: mime-find-entity-from-content-id cid &optional message
+     MESSAGE から、CID の entity を返します。
+
+     MESSAGE が指定されていない� �合は、
+     `mime-message-structure' が使われます。
+
+
+File: mime-ja.info,  Node: Entity Attributes,  Next: Entity-header,  Prev: Entity Search,  Up: Entity
+
+3.4 Entity の属性
+====================
+
+ -- Function: mime-entity-content-type entity
+     ENTITY の content-type を返す。(cf. *Note mime-content-type::)
+
+ -- Function: mime-entity-content-disposition entity
+     ENTITY の content-disposition を返す。 (cf. *Note
+     mime-content-disposition::)
+
+ -- Function: mime-entity-filename entity
+     ENTITY の file 名を返す。
+
+ -- Function: mime-entity-encoding entity &optional default-encoding
+     ENTITY の content-transfer-encoding を返す。 (cf. *Note
+     Content-Transfer-Encoding::)
+
+     もし、ENTITY に Content-Transfer-Encoding
+     欄が存在しない� �合は、 DEFAULT-ENCODING
+     を返す。これが指定されない� �合は、`"7bit"'
+     を用いる。
+
+ -- Function: mime-entity-cooked-p entity
+     ENTITY の内容が既にコード変換されている� �合は
+     nil で無い値 を返す。
+
+
+File: mime-ja.info,  Node: Entity-header,  Next: entity formatting,  Prev: Entity Attributes,  Up: Entity
+
+3.5 Entity header の情� �
+===========================
+
+ -- Function: mime-fetch-field field-name &optional entity
+     ENTITY の header 中の FIELD-NAME 欄の body を返す。
+
+     結果の文字列は network 表現のままである。
+
+     ENTITY が省略された� �合は、`mime-message-structure'
+     の値を用 いる。
+
+     FIELD-NAME 欄が存在しない� �合は `nil' を返す。
+
+ -- Function: mime-read-field field-name &optional entity
+     ENTITY の header 中の FIELD-NAME
+     欄を構文解析した結果を返す。
+
+     結果の形式は欄毎に異なる。非構� 化欄の� �合は文字列を返し、構� 化欄の� �合
+     はその形式に従った list を返す。
+
+     結果中の文字列は Emacs の内部表現に変換される。
+
+     ENTITY が省略された� �合は、`mime-message-structure'
+     の値を用 いる。
+
+     FIELD-NAME 欄が存在しない� �合は nil を返す。
+
+
+File: mime-ja.info,  Node: entity formatting,  Next: Entity-content,  Prev: Entity-header,  Up: Entity
+
+3.6 Entity の文字表現
+==========================
+
+ -- Function: mime-insert-header entity &optional invisible-fields
+          visible-fields
+     現在位置に ENTITY の復号した header を挿入する。
+
+     INVISIBLE-FIELDS と VISIBLE-FIELDS は正規表現のlist
+     で、それ ぞれ、表示したくない field
+     名と表示したい欄名を表現したものである。
+
+     INVISIBLE-FIELDS の要� のどれかに match し、かつ、
+     VISIBLE-FIELDS の要� のどれにも match
+     しない欄は表示されない。
+
+     encoded-word (*Note encoded-word::)
+     は復号される。『生の非 us-ascii 文字』 は
+     `default-mime-charset' として解釈される。
+
+ -- Function: mime-insert-text-content entity
+     point の前に ENTITY を text entity として挿入します。
+
+     ENTITY の内容は *Note MIME charset:: として復号化され
+     ます。ENTITY の Content-Type field に charset paramter が無
+     いと、`default-mime-charset'
+     が初期値として使われます。
+
+ -- Variable: default-mime-charset
+     適切な MIME charset (*Note MIME charset::)
+     が見つからなかった� �合に用いら れるMIME charset.
+
+     本来は APEL の変数である。
+
+
+File: mime-ja.info,  Node: Entity-content,  Next: Entity-network-representation,  Prev: entity formatting,  Up: Entity
+
+3.7 Entity の内容
+====================
+
+ -- Function: mime-entity-content entity
+     ENTITY の内容の byte 列を返す。
+
+ -- Function: mime-insert-entity-content entity
+     point の位置に ENTITY の内容を挿入します。
+
+ -- Function: mime-write-entity-content entity filename
+     ENTITY の内容を FILENAME に書き込みます。
+
+
+File: mime-ja.info,  Node: Entity-network-representation,  Next: Entity buffer,  Prev: Entity-content,  Up: Entity
+
+3.8 Entity のネットワーク表現
+======================================
+
+ -- Function: mime-insert-entity entity
+     ENTITY の header と body を point
+     のところに挿入します。
+
+ -- Function: mime-write-entity entity filename
+     ENTITY の表現を FILENAME に書き込みます。
+
+ -- Function: mime-write-entity-body entity filename
+     ENTITY の body を FILENAME に書き込みます。
+
+
+File: mime-ja.info,  Node: Entity buffer,  Next: mm-backend,  Prev: Entity-network-representation,  Up: Entity
+
+3.9 Entity の buffer による表現
+=====================================
+
+ -- Function: mime-entity-buffer entity
+     ENTITY が存在する buffer を返す。
+
+ -- Function: mime-entity-point-min entity
+     ENTITY が存在する buffer における、ENTITY
+     が� める� �域の先� � 位置を返す。
+
+ -- Function: mime-entity-point-max entity
+     ENTITY が存在する buffer における、ENTITY
+     が� める� �域の末尾 位置を返す。
+
+ -- Function: mime-entity-header-start entity
+     ENTITY が存在する buffer における、header
+     が� める� �域の先� �位置を 返す。
+
+ -- Function: mime-entity-header-end entity
+     ENTITY が存在する buffer における、header
+     が� める� �域の末尾位置を 返す。
+
+ -- Function: mime-entity-body-start entity
+     ENTITY が存在する buffer における、body
+     が� める� �域の先� �位置を返 す。
+
+ -- Function: mime-entity-body-end entity
+     ENTITY が存在する buffer における、body
+     が� める� �域の末尾位置を返 す。
+
+
+File: mime-ja.info,  Node: mm-backend,  Prev: Entity buffer,  Up: Entity
+
+3.10 Entity の表現と実現
+==============================
+
+Entity
+は抽象化されたデータ表現で、実際のデータ表現としては用途に応じて
+さまざまなものが利用できるように設計されています。
+
+   ここで、entity
+がどういう種類の表現を行っているかを示すのが
+*representation-type* で、entity
+を生成する時にはこれを指定します。 (cf. *Note Entity
+creation::)
+
+   前節までに述べて来た entity に対する処理は、entity
+に対してその処理を依
+� �することによって実現されています。Entity
+は自分の representation-type を知っており、その
+representation-type に応じて実際の処理を行う関数を呼
+び出します。このような関数を *entity 処理method*
+と呼びます。また、 representation-type
+毎にこのような関数をまとめたものを *mm-backend*
+と呼びます。
+
+   mm-backend は representation-type の名前の先� �に `mm'
+という 接� �辞を付けた関数名からなる module
+で、その module 名は同様に representation-type
+の名前の先� �に `mm' を付けたものになって
+います。この module は representation-type の entity
+が最初に生成される 時に自動的に require されます。
+
+* Menu:
+
+* Request for entity::          Entity への便り
+* mm-backend module::           mm-backend の作り方
+
+
+File: mime-ja.info,  Node: Request for entity,  Next: mm-backend module,  Prev: mm-backend,  Up: mm-backend
+
+3.10.1 Entity への便り
+--------------------------
+
+ -- Function: mime-entity-send entity message &rest args
+     ENTITY に MESSAGE を送る。
+
+     ARGS は MESSAGE の引数である。
+
+
+File: mime-ja.info,  Node: mm-backend module,  Prev: Request for entity,  Up: mm-backend
+
+3.10.2 mm-backend の作り方
+------------------------------
+
+ -- Macro: mm-define-backend type &optional parents
+     TYPE を mm-backend として定義します。
+
+     PARENTS が指定されている� �合は、TYPE は prents
+     を継承します。それぞれの parent は
+     representation-type である必要があ ります。
+
+     例:
+
+          (mm-define-backend chao (generic))
+
+ -- Macro: mm-define-method name args &rest body
+     NAME を (nth 1 (car ARGS)) backend の method 関
+     数として定義します。
+
+     ARGS は lambda
+     の引数リストのようなものですが、(car ARGS)
+     は指定された parameter である必要があります。(car
+     (car ARGS)) は変数の名前で、(nth 1 (car ARGS)) は backend
+     の名前 (representation-type) です。
+
+     例:
+
+          (mm-define-method entity-cooked-p ((entity chao)) nil)
+
+
+File: mime-ja.info,  Node: Content-Type,  Next: Content-Disposition,  Prev: Entity,  Up: Top
+
+4 Content-Type 欄の情� �
+***************************
+
+*Content-Type 欄* は media-type (*Note media-type::) や MIME charset
+といった entity (*Note Entity::)
+の内容の種類や表現形式などを記述
+するためのもので、RFC 2045 (*Note RFC 2045::)
+で定義されています。
+
+*[Memo]*
+
+     歴史的には RFC 1049 で Content-Type
+     欄が提案されている。但し、MIME の media-type
+     のような type と subtype の区別はなく、MIME charset
+     のような
+     文字符号の種類を表現することもできない。
+
+   FLIM は Content-Type 欄を構文解析する関数と Content-Type
+欄の解析結果を � �納する構� 体 *mime-content-type*
+を提供します。
+
+* Menu:
+
+* Content-Type field::          Content-Type 欄の形式
+* mime-content-type::           mime-content-type 構� 体
+* Content-Type parser::         Content-Type 欄の解析器
+* Content-Type utility::        Content-Type に関する有用な関数
+
+
+File: mime-ja.info,  Node: Content-Type field,  Next: mime-content-type,  Prev: Content-Type,  Up: Content-Type
+
+4.1 Content-Type 欄の形式
+=============================
+
+Content-Type
+欄の形式は以下のように定義されています：
+
+     "Content-Type" ":" *type* "/" *subtype* *( ";" *parameter* )
+
+   例えば、
+
+          Content-Type: image/jpeg
+
+や
+
+          Content-Type: text/plain; charset=iso-2022-jp
+
+などのように用いられます。
+
+   ここで、`type' と `subtype' は entity
+の形式を示すもので、両者を総称し て、`media-type'
+と呼ぶことにします。上記の例における `image/jpeg' や
+`text/plain' は media-type の１つです。
+
+*[Memo]*
+
+     Content-Type 欄のない entity は
+
+               Content-Type: text/plain; charset=us-ascii
+
+     として解釈される。(cf. *Note us-ascii::)
+
+
+File: mime-ja.info,  Node: mime-content-type,  Next: Content-Type parser,  Prev: Content-Type field,  Up: Content-Type
+
+4.2 mime-content-type 構� 体
+===============================
+
+ -- Structure: mime-content-type
+     Content-Type 欄の情� �を� �納するための構� 体。
+
+     この構� 体を参照するには `mime-content-type-要� 名'
+     という名前の参 照関数を用いる。
+
+     この構� 体の要� は以下の通りである：
+
+    PRIMARY-TYPE
+          media-type の主型 (symbol).
+
+    SUBTYPE
+          media-type の副型 (symbol).
+
+    PARAMETERS
+          Content-Type 欄の parameter (連想 list).
+
+
+ -- Function: make-mime-content-type type subtype
+     	   &optional  parameters
+
+     content-type の生成子。
+
+ -- Function: mime-content-type-parameter content-type parameter
+     CONTENT-TYPE の PARAMETER の値を返す。
+
+
+File: mime-ja.info,  Node: Content-Type parser,  Next: Content-Type utility,  Prev: mime-content-type,  Up: Content-Type
+
+4.3 Content-Type 欄の解析器
+================================
+
+ -- Function: mime-parse-Content-Type string
+     STRING を content-type として解析した結果を返す。
+
+ -- Function: mime-read-Content-Type
+     現在の buffer の Content-Type
+     欄を読み取り、解析した結果を返す。
+
+     Content-Type 欄が存在しない� �合は nil を返す。
+
+
+File: mime-ja.info,  Node: Content-Type utility,  Prev: Content-Type parser,  Up: Content-Type
+
+4.4 Content-Type に関する有用な関数
+============================================
+
+ -- Function: mime-type/subtype-string type &optional subtype
+     TYPE と SUBTYPE から type/subtype 形式の文字列を返す。
+
+
+File: mime-ja.info,  Node: Content-Disposition,  Next: Content-Transfer-Encoding,  Prev: Content-Type,  Up: Top
+
+5 Content-Disposition 欄の情� �
+**********************************
+
+*Content-Disposition 欄* は entity の表示や file 名など
+の属性になどに関する情� �を記述するためのものです。
+
+[RFC 2183]
+
+     S. Dorner, K. Moore and R. Troost, "Communicating Presentation
+     Information in Internet Messages: The Content-Disposition Header",
+     August 1997, Standards Track.
+
+   FLIM は Content-Disposition 欄を構文解析する関数と
+Content-Disposition 欄の解析結果を� �納する構� 体
+*mime-content-disposition* を提供します。
+
+* Menu:
+
+* mime-content-disposition::    mime-content-disposition 構� 体
+* Content-Disposition parser::  Content-Disposition 欄の解析器
+
+
+File: mime-ja.info,  Node: mime-content-disposition,  Next: Content-Disposition parser,  Prev: Content-Disposition,  Up: Content-Disposition
+
+5.1 mime-content-disposition 構� 体
+======================================
+
+ -- Structure: mime-content-disposition
+     Content-Disposition
+     欄の解析結果を収めるための構� 体。
+
+     この構� 体を参照するには
+     `mime-content-disposition-要� 名' という名
+     前の参照関数を用いる。
+
+     この構� 体の要� は以下の通りである：
+
+    DISPOSITION-TYPE
+          disposition-type (symbol).
+
+    PARAMETERS
+          Content-Disposition 欄の parameter (連想 list).
+
+
+ -- Function: mime-content-disposition-parameter content-disposition
+          parameter
+     CONTENT-DISPOSITION の PARAMETER の値を返す。
+
+ -- Function: mime-content-disposition-filename content-disposition
+     CONTENT-DISPOSITION の filename の値を返す。
+
+
+File: mime-ja.info,  Node: Content-Disposition parser,  Prev: mime-content-disposition,  Up: Content-Disposition
+
+5.2 Content-Disposition 欄の解析器
+=======================================
+
+ -- Function: mime-parse-Content-Disposition string
+     STRING を content-disposition
+     として解析した結果を返す。
+
+ -- Function: mime-read-Content-Disposition
+     現在の buffer の Content-Disposition
+     欄を読み取り、解析した結果を返す。
+
+     Content-Disposition 欄が存在しない� �合は nil を返す。
+
+
+File: mime-ja.info,  Node: Content-Transfer-Encoding,  Next: encoded-word,  Prev: Content-Disposition,  Up: Top
+
+6 符号化法
+**************
+
+*Content-Transfer-Encoding 欄* は entity
+の符号化法を記述するため のものです。
+
+   FLIM では Content-Transfer-Encoding
+欄を構文解析する関数を提供します。こ
+れらの関数は Content-Transfer-Encoding
+欄の情� �は文字列で表現します。
+
+   また、Content-Transfer-Encoding
+に基づいて符号化・復号化を行う関数も提
+供されます。
+
+* Menu:
+
+* Content-Transfer-Encoding parser::  Content-Transfer-Encoding 欄の解析器
+* encoder/decoder::             符号化・復号化
+* Encoding information::        Other utilities
+* mel-backend::                 How to write encoder/decoder module
+* generic function for mel-backend::  How to add encoding/decoding service
+
+
+File: mime-ja.info,  Node: Content-Transfer-Encoding parser,  Next: encoder/decoder,  Prev: Content-Transfer-Encoding,  Up: Content-Transfer-Encoding
+
+6.1 Content-Transfer-Encoding 欄の解析器
+=============================================
+
+ -- Function: mime-parse-Content-Transfer-Encoding string
+     STRING を content-transfer-encoding
+     として解析した結果を返す。
+
+ -- Function: mime-read-Content-Transfer-Encoding &optional
+          default-encoding
+     現在の buffer の Content-Transfer-Encoding
+     欄を読み取り、解析した結果を 返す。
+
+     Content-Transfer-Encoding
+     欄が存在しない� �合はDEFAULT-ENCODING を 返す。
+
+
+File: mime-ja.info,  Node: encoder/decoder,  Next: Encoding information,  Prev: Content-Transfer-Encoding parser,  Up: Content-Transfer-Encoding
+
+6.2 符号化・復号化
+=========================
+
+ -- Function: mime-encode-region start end encoding
+     現在の buffer の START から END までの region を
+     ENCODING を使って符号化します。
+
+ -- Function: mime-decode-region start end encoding
+     現在の buffer の START から END までの region を
+     ENCODING を使って復号化します。
+
+ -- Function: mime-decode-string string encoding
+     STRING を ENCODING として復号した結果を返す。
+
+ -- Function: mime-insert-encoded-file filename encoding
+     ENCODING format で符号化された file FILENAME を
+     挿入する。
+
+ -- Function: mime-write-decoded-region start end filename encoding
+     ENCODING で符号化された現在の region を復号化して
+     FILENAMEに書き込みます。
+
+     <var>start<var> と END は buffer の位置です。
+
+
+File: mime-ja.info,  Node: Encoding information,  Next: mel-backend,  Prev: encoder/decoder,  Up: Content-Transfer-Encoding
+
+6.3 Other utilities
+===================
+
+ -- Function: mime-encoding-list &optional SERVICE
+     Content-Transfer-Encoding の list を返します。
+
+     SERVICE が指定されていると、それに対する
+     Content-Transfer-Encoding を返します。
+
+ -- Function: mime-encoding-alist &optional SERVICE
+     補完のための Content-Transfer-Encoding
+     の表を返します。
+
+     SERVICE が指定されている� �合はそれに対する
+     Content-Transfer-Encoding の list を返します。
+
+
+File: mime-ja.info,  Node: mel-backend,  Next: generic function for mel-backend,  Prev: Encoding information,  Up: Content-Transfer-Encoding
+
+6.4 How to write encoder/decoder module
+=======================================
+
+ -- Macro: mel-define-method name args &rest body
+     NAME を (nth 1 (car (last ARGS))) backend の method
+     関数として定義します。
+
+     ARGS は lambda の引数 list と似ていますが、(car (last
+     ARGS)) は指定された parameter
+     である必要があります。(car (car (last ARGS)))
+     は変数の名前で、(nth 1 (car (last ARGS))) は backend
+     の名前 (encoding) です。
+
+     例:
+
+          (mel-define-method mime-write-decoded-region (start end filename
+          						    (nil "base64"))
+            "Decode and write current region encoded by base64 into FILENAME.
+          START and END are buffer positions."
+            (interactive
+             (list (region-beginning) (region-end)
+          	 (read-file-name "Write decoded region to file: ")))
+            (let ((str (buffer-substring start end)))
+              (with-temp-buffer
+                (insert (decode-base64-string str))
+                (write-region-as-binary (point-min) (point-max) filename)
+                )))
+
+ -- Macro: mel-define-method-function spec function
+     SPEC の関数定義を FUNCTION に設定します。
+
+     SPEC の最初の要� は service です。
+
+     ARGS の残りは lambda の引数 list 似ていますが、(car
+     (last ARGS)) は指定された parameter
+     である必要があります。(car (car (last ARGS)))
+     は変数の名前で、(nth 1 (car (last ARGS))) は backend
+     の名前 (encoding) です。
+
+     例:
+
+          (mel-define-method-function (mime-encode-string string (nil "base64"))
+          			    'encode-base64-string)
+
+
+File: mime-ja.info,  Node: generic function for mel-backend,  Prev: mel-backend,  Up: Content-Transfer-Encoding
+
+6.5 符号化/復号化 service を追� する方法
+=====================================================
+
+ -- Macro: mel-define-service name &optional args doc-string
+     NAME を Content-Transfer-Encoding の service
+     として定義しま す。
+
+     ARGS が指定されていると、NAME は service の generic
+     function として定義されます。
+
+     例:
+
+          (mel-define-service encoded-text-encode-string (string encoding)
+            "Encode STRING as encoded-text using ENCODING.
+          ENCODING must be string.")
+
+
+File: mime-ja.info,  Node: encoded-word,  Next: custom,  Prev: Content-Transfer-Encoding,  Up: Top
+
+7 Header の network 表現
+***************************
+
+encoded-word は header で非 ASCII (*Note ASCII::)
+文字を表現するための形式 で、*RFC 2047*
+で定義されています。
+
+[RFC 2047]
+
+     K. Moore, "MIME (Multipurpose Internet Mail Extensions) Part Three:
+     Message Header Extensions for Non-ASCII Text", November 1996,
+     Standards Track (obsolete RFC 1521,1522,1590).
+
+   また、行儀の悪いこと� と言えますが、encoded-word
+を用いずに非 ASCII (*Note ASCII::) 文字を header
+に入れた記事も存在します。
+
+   FLIM
+はこれらを符号化・復号化する機能を提供します。
+
+* Menu:
+
+* Header encoder/decoder::      Header の符号化・復号化
+
+
+File: mime-ja.info,  Node: Header encoder/decoder,  Prev: encoded-word,  Up: encoded-word
+
+7.1 Header の符号化・復号化
+===================================
+
+ -- Function: eword-decode-header &optional code-conversion separator
+     Header 中の encoded-word を復号する。
+
+     もし CODE-CONVERSION が `nil' なら、encoded-word
+     � けが復号さ れる。もし、CODE-CONVERSION が MIME
+     charset (*Note MIME charset::) なら、非 ASCII bit patterns
+     はその MIME charset として復号される。これ以
+     外の� �合、非 ASCII bit patterns は`default-mime-charset'.
+     として復 号される。(cf. *Note entity formatting::)
+
+     もし SEPARATOR が `nil' でなければ、その値がheader
+     separator として用いられる。
+
+ -- Function: eword-encode-header &optional code-conversion
+     Header を network 表現に符号化する。
+
+     各 field は `mime-field-encoding-method-alist'
+     で指定された方式で 符号化される。
+
+ -- Variable: mime-field-encoding-method-alist
+     Field を符号化する方法を指定する連想 list。各
+     element は (FIELD . METHOD) の様になっている。
+
+     METHOD が `mime' であれば、FIELD は MIME format
+     に符号化さ れる (encoded-word)。
+
+     METHOD が `nil' であれば、FIELD は符号化されない。
+
+     METHOD が MIME charset であれば、FIELD
+     はネットワークコードに変換しな
+     ければならないときに charset に符号化される。
+
+     そうでなければ、FIELD
+     はネットワークコードに変換しなければならないとき
+     に 変数 `default-mime-charset' で符号化される
+
+
+File: mime-ja.info,  Node: custom,  Next: Appendix,  Prev: encoded-word,  Up: Top
+
+8 一般設定
+**************
+
+ -- group: mime
+     MIME 関連機能に関する group.
+
+     `mail' と `news' に属する。
+
+
+File: mime-ja.info,  Node: Appendix,  Next: Concept Index,  Prev: custom,  Up: Top
+
+9 付録
+********
+
+* Menu:
+
+* Glossary::                    用語
+* Bug report::                  bug � �告の仕方
+* GitHub::                      GitHub による開発
+* History::                     歴史
+
+
+File: mime-ja.info,  Node: Glossary,  Next: Bug report,  Prev: Appendix,  Up: Appendix
+
+9.1 用語
+==========
+
+* Menu:
+
+* 7bit::
+* 8bit::
+* ASCII::
+* Base64::
+* binary::
+* Coded character set::         Coded character set（符号化文字集合）, Character code（文字符号）
+* media-type::
+* message::
+* MIME::
+* MIME charset::
+* MTA::
+* MUA::
+* Quoted-Printable::
+* RFC 822::
+* RFC 1036::
+* RFC 2045::
+* RFC 2046::
+* RFC 2048::
+* RFC 2049::
+* plain text::
+* us-ascii::
+
+
+File: mime-ja.info,  Node: 7bit,  Next: 8bit,  Prev: Glossary,  Up: Glossary
+
+9.1.1 7bit
+----------
+
+ここでは 0 から 127 の整数を指す。
+
+   0 から 127 の整数の列で表現できるような data を
+"7bit の data" と呼ぶ。
+
+   また、0 から 31 および 127 で表現される制御文字と
+32 で表現される空白と 33 から 126
+で表現される図形文字からなる文字列のことを "7bit
+の文字列" と呼ぶ（これは ISO 2022 の「7
+単位系」と同様）。
+
+   伝統的な Internet の MTA (*Note MTA::) は 7bit の data
+を転送できるので、 7bit の data は Quoted-Printable (*Note
+Quoted-Printable::) や Base64 (*Note Base64::)
+といった変換を行わなくてもそのまま転送できる。
+
+   しかし、7bit であればどんな data
+でも良いとはいえない。なぜなら、１行の
+長さがあまりに長いと、MTA はその message
+を転送することができないからで
+ある。ちなみに、RFC 822 (*Note RFC 822::)
+は１行は改行文字を除いて 998 byte
+以内であることを求めている。よって、これ以上の行が含まれる可能性の
+ある data, 例えば、Postscript の data などは Quoted-Printable
+等で encodeする必用がある。
+
+
+File: mime-ja.info,  Node: 8bit,  Next: ASCII,  Prev: 7bit,  Up: Glossary
+
+9.1.2 8bit
+----------
+
+ここでは 0 から 255 の整数を指す。
+
+   0 から 255 の整数の列で表現できるような data を
+"8bit の data" と呼ぶ。
+
+   また、0 から 31, 127 および 128 から 159
+で表現される制御文字と 32 で表 現される空白と 33
+から 126 と 160 から 255 で表現される図形文字からなる
+文字列のことを "8bit の文字列" と呼ぶ（これは ISO
+2022 の「8 単位系」と同様）。
+
+   iso-8859-1 や euc-kr といった符号化文 字集合は 8bit
+の文字列である。
+
+   伝統的な Internet の MTA (*Note MTA::) は 7bit (*Note 7bit::)
+の data しか転 送できないので、そうした MTA
+を経由する� �合、Quoted-Printable (*Note Quoted-Printable::) や
+Base64 (*Note Base64::) といった変換を行わなく
+てはならない。
+
+   しかし、最近では 8bit
+の文字列をそのまま通すことができる MTA も登� �して
+きたので、そのまま送ることができる� �合も増えてきた。
+
+   しかし、8bit であればどんな data
+でも良いとはいえない。なぜなら、１行の
+長さがあまりに長いと、MTA はその message
+を転送することができないからで
+ある。ちなみに、RFC 822 (*Note RFC 822::)
+は１行は改行文字を除いて 998 byte
+以内であることを求めている。よって、これ以上の行が含まれる可能性の
+ある data, 例えば、Postscript の data などは Quoted-Printable
+等で encodeする必用がある。
+
+   また、こうした理由から、１行が 999 byte
+以上の行が存在する可能性のある data は *binary* (*Note
+binary::) と呼ぶことにする。
+
+   ちなみに、7bit で表現できる data は 8bit
+でも表現できる。よって、 "8bit"
+と言った� �合、１行が 998 byte 以下の任意の data
+を指すことが ある。
+
+
+File: mime-ja.info,  Node: ASCII,  Next: Base64,  Prev: 8bit,  Up: Glossary
+
+9.1.3 ASCII
+-----------
+
+アメリカ連邦で使われる文字を符号化した符号化文字集合
+(*Note Coded character set::)。A-Z, a-z の Latin
+文字と数字、幾つかの記号からなる。ISO 646 の一つ
+で、現在は国際基準版 (IRV) になっている。
+
+[ASCII]
+
+     "Coded Character Set - 7-Bit American Standard Code for Information
+     Interchange", ANSI X3.4:1986.
+
+
+File: mime-ja.info,  Node: Base64,  Next: binary,  Prev: ASCII,  Up: Glossary
+
+9.1.4 Base64
+------------
+
+RFC 2045 (*Note RFC 2045::) で定義されている MIME (*Note
+MIME::) における binary data (*Note binary::) の network
+での変換法の１つ。
+
+   『64 進数』という意味で、3 byte の data を 0 から 63
+の数を表す ASCII (*Note ASCII::) 4
+文字に変換する方法。（もし、4 文字にならなければ
+*pad* と呼ばれる詰め物をして長さを調整する）
+
+   この 65 種類の文字は ASCII と EBCDIC
+の共通部分から選ばれており、 Internet 以外の network
+を経由する� �合でも安全に転送できるように設計さ
+れている。
+
+
+File: mime-ja.info,  Node: binary,  Next: Coded character set,  Prev: Base64,  Up: Glossary
+
+9.1.5 binary
+------------
+
+任意の byte 列を *binary* と呼ぶ。
+
+   8bit (*Note 8bit::) と異なるのは data
+に行の構� を仮定しないことである。
+
+   また、行の構� があっても、999 byte
+以上からなる行がある� �合も binary と
+呼ぶことにする。
+
+   ちなみに、7bit (*Note 7bit::) や 8bit で表現できる data
+は binary でも表現 できる。よって、*binary data*
+と言った� �合、任意の data を指すこ とがある。
+
+
+File: mime-ja.info,  Node: Coded character set,  Next: media-type,  Prev: binary,  Up: Glossary
+
+9.1.6 Coded character set（符号化文字集合）, Character code（文字符号）
+--------------------------------------------------------------------------------------
+
+文字と byte
+列と１対１に対応付ける曖昧でない規則の集合。
+
+
+File: mime-ja.info,  Node: media-type,  Next: message,  Prev: Coded character set,  Up: Glossary
+
+9.1.7 media-type
+----------------
+
+MIME (*Note MIME::) における entity (*Note Entity::) の種類。
+*primary-type* と *subtype* からなる。RFC 2046 (*Note RFC 2046::)
+で定義されている。
+
+   primary-type は標準では
+
+   * *text*
+
+   * *image*
+
+   * *audio*
+
+   * *video*
+
+   * *application*
+
+   * *multipart*
+
+   * *message*
+
+が定義され、それぞれには application/octet-stream,
+audio/basic, image/jpeg, multipart/mixed, text/plain, video/mpeg
+などの さまざまな subtype が定義されている。
+
+*[注意]*
+
+     ここでは、text/plain などの type/subtype
+     の組をしばしば *primary-type/subtype* と書く。
+
+   media-type は、RFC 2046
+で定義されているものに� えて、登録することもでき
+る。現在、登録されているものは MEDIA TYPES
+(ftp://ftp.isi.edu/in-notes/iana/assignments/media-types)
+で参照できる。
+
+   また、type もしくは subtype に、前に `x-' を付けた
+*x-token* を用
+いることにより、登録されていないものを私的に用いることもできる。しかし、
+当然のことながら、こうした私的な media-type
+は諒解を得た者の間でしか解釈
+できないので利用には注意すること。
+
+   (cf. *Note Content-Type::)
+
+
+File: mime-ja.info,  Node: message,  Next: MIME,  Prev: media-type,  Up: Glossary
+
+9.1.8 message
+-------------
+
+ここでは mail と news 記事の総称として用いる。
+
+
+File: mime-ja.info,  Node: MIME,  Next: MIME charset,  Prev: message,  Up: Glossary
+
+9.1.9 MIME
+----------
+
+*Multipurpose Internet Mail Extensions* の略で、Internet の mail
+や news で us-ascii plain text (*Note us-ascii::)
+以外の文字を使うための RFC 822 (*Note RFC 822::)
+に対する拡張。
+
+   RFC 2045 は冒� �で次のように述べている：
+
+   STD 11, RFC 822 は、US-ASCII message header
+に関して非常に詳細に規定し た message 表現 protocol
+を定義している。しかし、それは単に flat な US-ASCII
+text のみに留まり、message の内容や message body
+に関する規定 はなされていない。Multipurpose Internet
+Mail Extensions, あるいは MIME
+と総称される、この一連の文書は、以下の事を可能とするために
+message の 形式を再定義した：
+
+  1. 文書 message body における US-ASCII 以外の文字集合
+
+  2. 非文書 message body
+
+  3. 複数の部分からなる message body
+
+  4. US-ASCII 以外の文字集合からなる文書 header 情� �
+
+   RFC 2045 (*Note RFC 2045::), RFC 2046 (*Note RFC 2046::), RFC 2047
+(*Note encoded-word::), RFC 2048 (*Note RFC 2048::), RFC 2049 (*Note
+RFC 2049::) で定義されている。
+
+
+File: mime-ja.info,  Node: MIME charset,  Next: MTA,  Prev: MIME,  Up: Glossary
+
+9.1.10 MIME charset
+-------------------
+
+Content-Type (*Note Content-Type::) 欄や encoded-word (*Note
+encoded-word::) の charset parameter
+で用いられる登録された符号化文字集合(*Note Coded
+character set::)。
+
+   RFC 2045 (*Note RFC 2045::) で定義されている。
+
+   iso-2022-jp や euc-kr はその１つ。
+
+
+File: mime-ja.info,  Node: MTA,  Next: MUA,  Prev: MIME charset,  Up: Glossary
+
+9.1.11 MTA
+----------
+
+*Message Transfer Agent* の略で、qmail や sendmail などの mail
+配 送 program と inn などの news server の総称。
+
+   (cf. *Note MUA::)
+
+
+File: mime-ja.info,  Node: MUA,  Next: Quoted-Printable,  Prev: MTA,  Up: Glossary
+
+9.1.12 MUA
+----------
+
+*Message User Agent* の略で、mail reader と news reader
+の総称。
+
+   (cf. *Note MTA::)
+
+
+File: mime-ja.info,  Node: Quoted-Printable,  Next: RFC 822,  Prev: MUA,  Up: Glossary
+
+9.1.13 Quoted-Printable
+-----------------------
+
+RFC 2045 (*Note RFC 2045::) で定義されている MIME (*Note
+MIME::) における binary data の network での変換法の１つ。
+
+   `=' や制御文字や 128 以上の文字などは `=AF'
+のように `=' の後に続く 16
+進数で表現する。このため、ASCII (*Note ASCII::)
+文字中心の data では Base64 (*Note Base64::)
+に比べると可読性が高くなる可能性がある。
+
+   しかしながら、EBCDIC
+には存在しない文字を利用する� �合、EBCDIC を利用し
+ている network
+では安全に転送することができず、Base64
+に比べて安全性は 低い。
+
+
+File: mime-ja.info,  Node: RFC 822,  Next: RFC 1036,  Prev: Quoted-Printable,  Up: Glossary
+
+9.1.14 RFC 822
+--------------
+
+Internet mail の主に *message header* に関する形式に
+関する標準を定めている RFC.
+
+*[Memo]*
+
+     news message もこれに準じているので、*Internet mail*
+     と書くよりも、 *Internet message*
+     と書いた方が良いかもしれない。
+
+[RFC 822]
+
+     D. Crocker, "Standard for the Format of ARPA Internet Text
+     Messages", August 1982, STD 11.
+
+
+File: mime-ja.info,  Node: RFC 1036,  Next: RFC 2045,  Prev: RFC 822,  Up: Glossary
+
+9.1.15 RFC 1036
+---------------
+
+USENET での message の形式を定めた RFC.  RFC 822 (*Note RFC
+822::) の subset になっている。Internet
+の標準ではないが、USENET 以外の netnews で
+もこれに準じているものが多い。
+
+[USENET: RFC 1036]
+
+     M. Horton and R. Adams, "Standard for Interchange of USENET
+     Messages", December 1987, (obsolete RFC 850).
+
+
+File: mime-ja.info,  Node: RFC 2045,  Next: RFC 2046,  Prev: RFC 1036,  Up: Glossary
+
+9.1.16 RFC 2045
+---------------
+
+[RFC 2045]
+
+     N. Freed and N. Borenstein, "Multipurpose Internet Mail Extensions
+     (MIME) Part One: Format of Internet Message Bodies", November 1996,
+     Standards Track (obsolete RFC 1521, 1522, 1590).
+
+
+File: mime-ja.info,  Node: RFC 2046,  Next: RFC 2048,  Prev: RFC 2045,  Up: Glossary
+
+9.1.17 RFC 2046
+---------------
+
+[RFC 2046]
+
+     N. Freed and N. Borenstein, "Multipurpose Internet Mail Extensions
+     (MIME) Part Two: Media Types", November 1996, Standards Track
+     (obsolete RFC 1521, 1522, 1590).
+
+
+File: mime-ja.info,  Node: RFC 2048,  Next: RFC 2049,  Prev: RFC 2046,  Up: Glossary
+
+9.1.18 RFC 2048
+---------------
+
+[RFC 2048]
+
+     N. Freed, J. Klensin and J. Postel, "Multipurpose Internet Mail
+     Extensions (MIME) Part Four: Registration Procedures", November
+     1996, Standards Track (obsolete RFC 1521, 1522, 1590).
+
+
+File: mime-ja.info,  Node: RFC 2049,  Next: plain text,  Prev: RFC 2048,  Up: Glossary
+
+9.1.19 RFC 2049
+---------------
+
+[RFC 2049]
+
+     N. Freed and N. Borenstein, "Multipurpose Internet Mail Extensions
+     (MIME) Part Five: Conformance Criteria and Examples", November
+     1996, Standards Track (obsolete RFC 1521, 1522, 1590).
+
+
+File: mime-ja.info,  Node: plain text,  Next: us-ascii,  Prev: RFC 2049,  Up: Glossary
+
+9.1.20 plain text
+-----------------
+
+書体や組版に関する情� �を持たない文字符号 (*Note
+Coded character set::) のみ で表現される text 情� �。
+
+
+File: mime-ja.info,  Node: us-ascii,  Prev: plain text,  Up: Glossary
+
+9.1.21 us-ascii
+---------------
+
+アメリカ連邦などで使われる英語などを表現するための
+MIME charset (*Note MIME charset::) の１つ。
+
+   ASCII (*Note ASCII::) のみからなり ISO 2022
+による符号拡張は許されない。
+
+   Internet message における標準の符号化文字集合 (*Note
+Coded character set::) であり、明示的に MIME charset
+が示されない� �合は原則として *us-ascii* が使われる。
+
+   また、RFC 822 (*Note RFC 822::) における *ASCII* は us-ascii
+である。
+
+
+File: mime-ja.info,  Node: Bug report,  Next: GitHub,  Prev: Glossary,  Up: Appendix
+
+9.2 bug � �告の仕方
+=======================
+
+FLIM-LB
+に関する議論は以下のメーリングリストで行われます。
+最新バージョンのアナウンスもこちらに流れます。
+
+     Wanderlust Mailing List <wl@ml.gentei.org>
+
+ここでは主に日本語での議論が行われています。また、英語専用のリストとして
+
+     Wanderlust List in English <wl-en@ml.gentei.org>
+
+もあります(こちらに投稿されたメッセージは前者にも配送されます)。
+
+これらのメーリングリストのガイドを得るには、wl-ctl@ml.gentei.org
+宛 (英語の方は wl-en-ctl@ml.gentei.org 宛) で、本文に
+
+     # guide
+
+と書いたメールを送って下さい。
+
+バグ� �告やパッチの送付もこれらのメーリングリストへ送ってく� さい。メーリ
+ングリストへの送信はメンバになる必要があります。
+
+但し、あまりにも古い版に関する� �告は歓迎されません。古い版の
+bug は、新
+しい版では治っているかもしれません。まず、最新版で確認してみましょう。
+
+それから、適切な� �告をしましょう。単に「うまく動かない」と言われてもど
+ういう状況なのかはさっぱり判りません。最低限、OS,
+emacs, APEL, FLIM, SEMI, 使っている MUA
+の種類および版、設定を書く必要があります。また、
+error が起っている� �合は backtrace
+を送ることも重要です。 (cf. *Note Reporting Bugs:
+(emacs)Bugs.)
+
+   また、bug
+は大抵複数の人が遭遇するものです（そうでなければ、bug
+ではな い可能性があります）。� から、作者に直接
+mail を送ると作者は同じ mail
+を何通も書く羽目になります。� から、必ず bug
+� �告は上記の address に送っ てく� さい。
+
+
+File: mime-ja.info,  Node: GitHub,  Next: History,  Prev: Bug report,  Up: Appendix
+
+9.3 GitHub による開発
+==========================
+
+FLIM-LB のリポジトリは GitHub で公開されています。
+
+     `https://github.com/wanderlust/flim'
+
+   プルリクエストを送る� �合は、Emacs
+の様に、コミットメッセージに従来の `ChangeLog'
+エントリに相当する内容をインデントせずに入力して下さい。
+Emacs の `CONTRIBUTE' ファイル (1) にある `Commit messages'
+セクションを参照して下さい。
+
+また、バグ� �告の� �合はバックトレースを取って添付すると原� 究明しやすくな
+ります。 (2)
+
+   ---------- Footnotes ----------
+
+   (1) `https://git.savannah.gnu.org/cgit/emacs.git/plain/CONTRIBUTE'
+
+   (2) バックトレースの取り方は
+`http://www.jpl.org/elips/BUGS-ja.html'が参考になります。
+
+
+File: mime-ja.info,  Node: History,  Prev: GitHub,  Up: Appendix
+
+9.4 歴史
+==========
+
+FLIM の code の最古の部分は 榎並 嗣智 氏が書いた
+`mime.el' に起源し ます。この小さな program は Nemacs
+で動作する iso-2022-jp の B-encoding 専用の encoded-word
+の復号化プログラ� でした。
+
+   その後、守岡 知彦 は `mime.el' を元に`tiny-mime.el'
+というプロ グラ� を書きます。これは、Nemacs と Mule
+で動作する encoded-word の符号
+化・復号化プログラ� でした。`tiny-mime.el' は B-encoding
+� けでなく Q-encoding もsupport し、また、MULE
+で扱うことができるさまざまな MIME charset (*Note MIME
+charset::) を同時に使うことができました。この時、
+Nemacs と Mule の双方を support
+するために用いられたテクニックは後に emu package
+にまとめられます。
+
+   この� �、守岡 知彦 は `tiny-mime.el' をさまざまな MUA
+で使うための設
+定集も配布していましたが、それらは後に`tiny-mime.el'
+とともに１つの package にまとめられ、tm
+という名前で配布されます。
+
+   守岡 知彦 はやがて、MIME message
+を閲覧するためのプログラ� である `tm-body.el'
+を書きます。これは、すぐに`tm-view.el' という名前
+に変わりましたが、やがて、これが`tiny-mime.el'
+に代わって、tm の中 � �となります。
+
+   `tm-view.el' は当然、Content-Transfer-Encoding
+を扱う必要があります。 この目的のために、MEL
+が整備されはじめました。Base64 に関しては
+`tiny-mime.el' の code
+が移され、また、新たにQuoted-Printable の code
+が追� されました。これらが`mel-b.el' と `mel-q.el'
+になり ました。
+
+   また、後に、守岡 知彦 によって uuencode 用の
+`mel-u.el' が追� され、 その後に、小林 修平
+氏によって x-gzip64 用の`mel-g.el' が追� されま した。
+
+   tm では後に、守岡 知彦 によって `tiny-mime.el'
+の再実装が行われ、こ の過程で、STD 11 の parser
+が書かれました。これは、現在の `std11.el'
+に当たります。また、この過程で `tiny-mime.el' は復
+号化を行う `tm-ew-d.el' と符号化を行う `tm-ew-e.el'
+に分けられ ました。この両者が現在の `eword-decode.el'
+と `eword-encode.el' の先祖に当たります。
+
+   後に、守岡 知彦 らによって tm
+の全面書き換え作業が行われ、この過程で、tm は
+APEL, MEL, SEMI, EMH, RMAIL-MIME, Gnus-MIME
+などに分けられました。こ のうちの MEL が FLIM
+の直接の先祖に当たります。
+
+   後に、APEL から `std11.el' が移され、また、`mailcap.el',
+`eword-decode.el' および `eword-encode.el' が SEMI
+から移され、 package の名前が FLIM となります。
+
+   この直前から田中 哲 氏がより RFC
+に� 実な実装を書き始め、これは、現在、 FLIM
+の枝である "FLIM-FLAM" となっています。
+
+
+File: mime-ja.info,  Node: Concept Index,  Next: Function Index,  Prev: Appendix,  Up: Top
+
+10 概念索引
+***************
+
+ [index ]
+* Menu:
+
+* ANSI X3.4:1986:                        ASCII.                 (line 6)
+* application:                           media-type.            (line 6)
+* ASCII <1>:                             us-ascii.              (line 6)
+* ASCII:                                 ASCII.                 (line 6)
+* audio:                                 media-type.            (line 6)
+* binary <1>:                            8bit.                  (line 6)
+* binary:                                binary.                (line 6)
+* binary data:                           binary.                (line 6)
+* Content-Disposition 欄:               Content-Disposition.   (line 6)
+* Content-Transfer-Encoding 欄:         Content-Transfer-Encoding.
+                                                                (line 6)
+* Content-Type 欄:                      Content-Type.          (line 6)
+* entity:                                Entity.                (line 6)
+* entity 処理 method:                  mm-backend.            (line 6)
+* entity-number:                         Entity hierarchy.      (line 6)
+* image:                                 media-type.            (line 6)
+* Internet mail:                         RFC 822.               (line 6)
+* Internet message:                      RFC 822.               (line 6)
+* message <1>:                           Entity hierarchy.      (line 6)
+* message:                               media-type.            (line 6)
+* message header:                        RFC 822.               (line 6)
+* Message Transfer Agent:                MTA.                   (line 6)
+* Message User Agent:                    MUA.                   (line 6)
+* mime-content-disposition:              Content-Disposition.   (line 6)
+* mime-content-type:                     Content-Type.          (line 6)
+* mime-entity:                           Entity.                (line 6)
+* mm-backend:                            mm-backend.            (line 6)
+* multipart:                             media-type.            (line 6)
+* Multipurpose Internet Mail Extensions: MIME.                  (line 6)
+* node-id:                               Entity hierarchy.      (line 6)
+* pad:                                   Base64.                (line 6)
+* parameter:                             Content-Type field.    (line 6)
+* primary-type:                          media-type.            (line 6)
+* primary-type/subtype:                  media-type.            (line 6)
+* representation-type:                   mm-backend.            (line 6)
+* RFC 1036:                              RFC 1036.              (line 6)
+* RFC 2045:                              RFC 2045.              (line 6)
+* RFC 2046:                              RFC 2046.              (line 6)
+* RFC 2047:                              encoded-word.          (line 6)
+* RFC 2048:                              RFC 2048.              (line 6)
+* RFC 2049:                              RFC 2049.              (line 6)
+* RFC 2183:                              Content-Disposition.   (line 6)
+* RFC 822:                               RFC 822.               (line 6)
+* root-entity:                           Entity hierarchy.      (line 6)
+* Standards Track <1>:                   Content-Disposition.   (line 6)
+* Standards Track <2>:                   RFC 2048.              (line 6)
+* Standards Track <3>:                   encoded-word.          (line 6)
+* Standards Track <4>:                   RFC 2049.              (line 6)
+* Standards Track <5>:                   RFC 2045.              (line 6)
+* Standards Track:                       RFC 2046.              (line 6)
+* STD 11:                                RFC 822.               (line 6)
+* subtype <1>:                           Content-Type field.    (line 6)
+* subtype:                               media-type.            (line 6)
+* text:                                  media-type.            (line 6)
+* type:                                  Content-Type field.    (line 6)
+* us-ascii:                              us-ascii.              (line 6)
+* USENET:                                RFC 1036.              (line 6)
+* video:                                 media-type.            (line 6)
+* x-token:                               media-type.            (line 6)
+
+
+File: mime-ja.info,  Node: Function Index,  Next: Variable Index,  Prev: Concept Index,  Up: Top
+
+11 関数索引
+***************
+
+ [index ]
+* Menu:
+
+* eword-decode-header:                   Header encoder/decoder.
+                                                               (line  7)
+* eword-encode-header:                   Header encoder/decoder.
+                                                               (line 20)
+* make-mime-content-type:                mime-content-type.    (line 25)
+* mel-define-method:                     mel-backend.          (line  7)
+* mel-define-method-function:            mel-backend.          (line 32)
+* mel-define-service:                    generic function for mel-backend.
+                                                               (line  7)
+* mime:                                  custom.               (line  7)
+* mime-content-disposition:              mime-content-disposition.
+                                                               (line  7)
+* mime-content-disposition-filename:     mime-content-disposition.
+                                                               (line 28)
+* mime-content-disposition-parameter:    mime-content-disposition.
+                                                               (line 25)
+* mime-content-type:                     mime-content-type.    (line  7)
+* mime-content-type-parameter:           mime-content-type.    (line 30)
+* mime-decode-region:                    encoder/decoder.      (line 11)
+* mime-decode-string:                    encoder/decoder.      (line 15)
+* mime-encode-region:                    encoder/decoder.      (line  7)
+* mime-encoding-alist:                   Encoding information. (line 13)
+* mime-encoding-list:                    Encoding information. (line  7)
+* mime-entity-body-end:                  Entity buffer.        (line 30)
+* mime-entity-body-start:                Entity buffer.        (line 26)
+* mime-entity-buffer:                    Entity buffer.        (line  7)
+* mime-entity-children:                  Entity hierarchy.     (line 61)
+* mime-entity-content:                   Entity-content.       (line  7)
+* mime-entity-content-disposition:       Entity Attributes.    (line 10)
+* mime-entity-content-type:              Entity Attributes.    (line  7)
+* mime-entity-cooked-p:                  Entity Attributes.    (line 26)
+* mime-entity-encoding:                  Entity Attributes.    (line 17)
+* mime-entity-filename:                  Entity Attributes.    (line 14)
+* mime-entity-header-end:                Entity buffer.        (line 22)
+* mime-entity-header-start:              Entity buffer.        (line 18)
+* mime-entity-node-id:                   Entity hierarchy.     (line 73)
+* mime-entity-number:                    Entity hierarchy.     (line 76)
+* mime-entity-parent:                    Entity hierarchy.     (line 64)
+* mime-entity-point-max:                 Entity buffer.        (line 14)
+* mime-entity-point-min:                 Entity buffer.        (line 10)
+* mime-entity-send:                      Request for entity.   (line  7)
+* mime-fetch-field:                      Entity-header.        (line  7)
+* mime-find-entity-from-content-id:      Entity Search.        (line 21)
+* mime-find-entity-from-node-id:         Entity Search.        (line 15)
+* mime-find-entity-from-number:          Entity Search.        (line  8)
+* mime-insert-encoded-file:              encoder/decoder.      (line 18)
+* mime-insert-entity:                    Entity-network-representation.
+                                                               (line  7)
+* mime-insert-entity-content:            Entity-content.       (line 10)
+* mime-insert-header:                    entity formatting.    (line  8)
+* mime-insert-text-content:              entity formatting.    (line 23)
+* mime-open-entity:                      Entity creation.      (line  7)
+* mime-parse-buffer:                     Entity creation.      (line 15)
+* mime-parse-Content-Disposition:        Content-Disposition parser.
+                                                               (line  7)
+* mime-parse-Content-Transfer-Encoding:  Content-Transfer-Encoding parser.
+                                                               (line  7)
+* mime-parse-Content-Type:               Content-Type parser.  (line  7)
+* mime-read-Content-Disposition:         Content-Disposition parser.
+                                                               (line 11)
+* mime-read-Content-Transfer-Encoding:   Content-Transfer-Encoding parser.
+                                                               (line 12)
+* mime-read-Content-Type:                Content-Type parser.  (line 10)
+* mime-read-field:                       Entity-header.        (line 17)
+* mime-root-entity-p:                    Entity hierarchy.     (line 69)
+* mime-type/subtype-string:              Content-Type utility. (line  7)
+* mime-write-decoded-region:             encoder/decoder.      (line 22)
+* mime-write-entity:                     Entity-network-representation.
+                                                               (line 11)
+* mime-write-entity-body:                Entity-network-representation.
+                                                               (line 14)
+* mime-write-entity-content:             Entity-content.       (line 13)
+* mm-define-backend:                     mm-backend module.    (line  7)
+* mm-define-method:                      mm-backend module.    (line 18)
+
+
+File: mime-ja.info,  Node: Variable Index,  Prev: Function Index,  Up: Top
+
+12 変数索引
+***************
+
+ [index ]
+* Menu:
+
+* default-mime-charset:                  entity formatting.    (line 31)
+* mime-field-encoding-method-alist:      Header encoder/decoder.
+                                                               (line 26)
+* mime-message-structure:                Entity hierarchy.     (line 57)
+
+
+
+Tag Table:
+Node: Top320
+Node: Introduction1346
+Node: How to use1724
+Node: Entity1991
+Node: Entity creation3404
+Node: Entity hierarchy4314
+Node: Entity Search7542
+Node: Entity Attributes8443
+Node: Entity-header9450
+Node: entity formatting10518
+Node: Entity-content11897
+Node: Entity-network-representation12377
+Node: Entity buffer12917
+Node: mm-backend14115
+Node: Request for entity15624
+Node: mm-backend module15930
+Node: Content-Type16923
+Node: Content-Type field18017
+Node: mime-content-type18894
+Node: Content-Type parser19787
+Node: Content-Type utility20294
+Node: Content-Disposition20619
+Node: mime-content-disposition21459
+Node: Content-Disposition parser22415
+Node: Content-Transfer-Encoding22968
+Node: Content-Transfer-Encoding parser23853
+Node: encoder/decoder24541
+Node: Encoding information25565
+Node: mel-backend26215
+Node: generic function for mel-backend28068
+Node: encoded-word28738
+Node: Header encoder/decoder29563
+Node: custom31286
+Node: Appendix31501
+Node: Glossary31801
+Node: 7bit32282
+Node: 8bit33568
+Node: ASCII35559
+Node: Base6436040
+Node: binary36758
+Node: Coded character set37352
+Node: media-type37709
+Node: message39101
+Node: MIME39280
+Node: MIME charset40528
+Node: MTA40947
+Node: MUA41205
+Node: Quoted-Printable41411
+Node: RFC 82242172
+Node: RFC 103642692
+Node: RFC 204543169
+Node: RFC 204643502
+Node: RFC 204843813
+Node: RFC 204944145
+Node: plain text44481
+Node: us-ascii44741
+Node: Bug report45361
+Node: GitHub47317
+Ref: GitHub-Footnote-148046
+Ref: GitHub-Footnote-248117
+Node: History48229
+Node: Concept Index51291
+Node: Function Index55742
+Node: Variable Index61260
+
+End Tag Table

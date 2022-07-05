@@ -1,0 +1,457 @@
+:PROPERTIES:
+:ID:                     17829216-93a9-4f5d-b297-a903ef9ad647
+:END:
+#+begin_html
+<p align="center">
+  <img max-width="512px" src="images/flyspell-correct.png" alt="Banner">
+</p>
+#+end_html
+
+* flyspell-correct
+:PROPERTIES:
+:ID:                     11b3a67e-c4af-42fd-93d8-d04e8cd4f899
+:END:
+
+[[https://github.com/d12frosted/flyspell-correct/workflows/CI/badge.svg][file:https://github.com/d12frosted/flyspell-correct/workflows/CI/badge.svg]]
+
+| =flyspell-correct=          | [[http://melpa.org/#/flyspell-correct][file:http://melpa.org/packages/flyspell-correct-badge.svg]]          | [[https://stable.melpa.org/#/flyspell-correct][file:https://stable.melpa.org/packages/flyspell-correct-badge.svg]]          |
+| =flyspell-correct-ivy=      | [[http://melpa.org/#/flyspell-correct-ivy][file:http://melpa.org/packages/flyspell-correct-ivy-badge.svg]]      | [[https://stable.melpa.org/#/flyspell-correct-ivy][file:https://stable.melpa.org/packages/flyspell-correct-ivy-badge.svg]]      |
+| =flyspell-correct-helm=     | [[http://melpa.org/#/flyspell-correct-helm][file:http://melpa.org/packages/flyspell-correct-helm-badge.svg]]     | [[https://stable.melpa.org/#/flyspell-correct-helm][file:https://stable.melpa.org/packages/flyspell-correct-helm-badge.svg]]     |
+| =flyspell-correct-popup=    | [[http://melpa.org/#/flyspell-correct-popup][file:http://melpa.org/packages/flyspell-correct-popup-badge.svg]]    | [[https://stable.melpa.org/#/flyspell-correct-popup][file:https://stable.melpa.org/packages/flyspell-correct-popup-badge.svg]]    |
+| =flyspell-correct-avy-menu= | [[http://melpa.org/#/flyspell-correct-popup][file:http://melpa.org/packages/flyspell-correct-avy-menu-badge.svg]] | [[https://stable.melpa.org/#/flyspell-correct-popup][file:https://stable.melpa.org/packages/flyspell-correct-avy-menu-badge.svg]] |
+
+Correcting misspelled words with flyspell using favourite interface.
+
+=flyspell-correct= provides several functions to start the correction process:
+
+- =flyspell-correct-wrapper= - by default jumps to the first misspelled word
+  before the point and prompts for correction and gets you back. Calling it with
+  =C-u= gives ability to correct [[multiple misspelled words][multiple misspelled words]] in one run. =C-u C-u=
+  changes direction. =C-u C-u C-u= changes direction and enables multiple
+  corrections.
+- =flyspell-correct-at-point= - to correct word at point.
+- =flyspell-correct-previous= to correct any visible word before the point.
+- =flyspell-correct-next= to correct any visible word after the point.
+
+In most cases =flyspell-correct-wrapper= is the most convenient, so don't forget
+to bind it.
+
+#+BEGIN_SRC emacs-lisp
+(define-key flyspell-mode-map (kbd "C-;") #'flyspell-correct-wrapper)
+#+END_SRC
+
+Most interfaces also allow you to save the new word to your dictionary, accept
+this spelling in current buffer or for a whole session, or even skip this word
+(useful in a rapid flow).
+
+=flyspell-correct= comes with default interface, which uses =completing-read=. If
+you use Ivy, Helm or Ido as completion system you probably want to replace the
+default interface with the specialized interface. All additional interfaces come
+in separate packages:
+
+- [[#flyspell-correct-ivy-interface][flyspell-correct-ivy]]
+- [[#flyspell-correct-avy-menu-interface][flyspell-correct-avy-menu]]
+- [[#flyspell-correct-helm-interface][flyspell-correct-helm]]
+- [[#flyspell-correct-popup-interface][flyspell-correct-popup]]
+
+** Table of contents                                                   :TOC:
+:PROPERTIES:
+:ID:                     e04b1e8e-7d48-486e-a292-b550f34b33c2
+:END:
+- [[#flyspell-correct][flyspell-correct]]
+  - [[#rapid-mode][Rapid mode]]
+  - [[#flyspell-correct-completing-read-interface][=flyspell-correct-completing-read= interface]]
+  - [[#flyspell-correct-ivy-interface][=flyspell-correct-ivy= interface]]
+  - [[#flyspell-correct-avy-menu-interface][=flyspell-correct-avy-menu= interface]]
+  - [[#flyspell-correct-ido-interface][=flyspell-correct-ido= interface]]
+  - [[#flyspell-correct-helm-interface][=flyspell-correct-helm= interface]]
+  - [[#flyspell-correct-popup-interface][=flyspell-correct-popup= interface]]
+- [[#deprecations][Deprecations]]
+  - [[#deprecations-in-v05][Deprecations in =v0.5=]]
+- [[#custom-interfaces][Custom interfaces]]
+- [[#highlighting][Highlighting]]
+- [[#auto-correction-mode][Auto correction mode]]
+- [[#reasoning][Reasoning]]
+- [[#screenshots][Screenshots]]
+  - [[#ivy-interface][Ivy interface]]
+  - [[#avy-menu-interface][Avy Menu interface]]
+  - [[#popup-interface][Popup interface]]
+  - [[#helm-interface][Helm interface]]
+  - [[#ido-interface][Ido interface]]
+  - [[#completing-read-interface][completing-read interface]]
+- [[#acknowledgements][Acknowledgements]]
+
+** Rapid mode
+:PROPERTIES:
+:ID:                     25719606-9996-4056-9049-18F73A609FF6
+:END:
+
+A so called 'rapid mode' means that you can correct multiple words in a single
+invocation of =flyspell-correct-wrapper= following current direction (usually,
+backwards). In order to enable it, one should call =flyspell-correct-wrapper=
+with universal argument - =C-u=. For example, =C-u C-;= will enable it.
+
+** =flyspell-correct-completing-read= interface
+:PROPERTIES:
+:ID:                     3aaedcac-ef83-441c-9dcc-24b567f8b400
+:END:
+
+In order to use =flyspell-correct-completing-read= interface you have to install
+=flyspell-correct= package in any preferred way and then add following snippet
+to relevant part of your =init.el= file.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell-correct)
+  (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-wrapper)
+#+END_SRC
+
+Or via =use-package=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
+#+END_SRC
+
+If you do not want any binding, just replace =:bind (:map
+flyspell-mode-map ("C-;" . flyspell-correct-wrapper))= with =:defer t=
+to use lazy loading.
+
+In order to select the (s)ave, (a)ccept, sto(p) or s(k)ip actions, you can enter
+the shortcut key =@s=, =@a=, =@p= or =@k=. The actions will be automatically submitted.
+Furthermore suggestions can be quickly submitted by entering the numeric index
+in front of the suggestion. Besides the quick keys the usual ~completing-read~
+interface is available, which may be enhanced and allow scrolling through
+candidates if you have a completion UI like [[https://github.com/oantolin/icomplete-vertical][Icomplete-vertical]], [[https://github.com/raxod502/selectrum][Selectrum]] or
+[[https://github.com/minad/vertico][Vertico]] installed.
+
+** =flyspell-correct-ivy= interface
+:PROPERTIES:
+:ID:                     5fc08aaa-02ac-48ac-9e7d-ca94e9abeb61
+:END:
+
+In order to use =flyspell-correct-ivy= interface you have to install
+=flyspell-correct-ivy= package in any preferred way and then add following
+snippet to relevant part of your =init.el= file.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell-correct-ivy)
+  (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-wrapper)
+#+END_SRC
+
+Or via =use-package=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
+
+  (use-package flyspell-correct-ivy
+    :after flyspell-correct)
+#+END_SRC
+
+If you do not want any binding, just replace =:bind (:map
+flyspell-mode-map ("C-;" . flyspell-correct-wrapper))= with =:defer t=
+to use lazy loading.
+
+Note that in order to access actions in =ivy= interface you need to press ~M-o~.
+More on =ivy= mini buffer key bindings you can read in [[http://oremacs.com/swiper/#key-bindings-for-single-selection-action-then-exit-minibuffer][official documentation]].
+
+** =flyspell-correct-avy-menu= interface
+:PROPERTIES:
+:ID:                     494754cd-9399-45ad-8c01-6fc616971911
+:END:
+
+In order to use =flyspell-correct-avy-menu= interface you have to install
+=flyspell-correct-avy-menu= package in any preferred way and then add following
+snippet to relevant part of your =init.el= file.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell-correct-avy-menu)
+  (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-wrapper)
+#+END_SRC
+
+Or via =use-package=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
+
+  (use-package flyspell-correct-avy-menu
+    :after flyspell-correct)
+#+END_SRC
+
+If you do not want any binding, just replace =:bind (:map
+flyspell-mode-map ("C-;" . flyspell-correct-wrapper))= with =:defer t=
+to use lazy loading.
+
+** =flyspell-correct-ido= interface
+:PROPERTIES:
+:ID:                     bd55cb14-df6c-485f-afd8-dabf390abe43
+:END:
+
+In order to use =flyspell-correct= interface you have to install
+=flyspell-correct-ido= package in any preferred way and then add following
+snippet to relevant part of your =init.el= file.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell-correct)
+  (require 'flyspell-correct-ido)
+  (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-wrapper)
+#+END_SRC
+
+Or via =use-package=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
+
+  (use-package flyspell-correct-ido
+    :after flyspell-correct)
+#+END_SRC
+
+If you do not want any binding, just replace =:bind (:map
+flyspell-mode-map ("C-;" . flyspell-correct-wrapper))= with =:defer t=
+to use lazy loading.
+
+** =flyspell-correct-helm= interface
+:PROPERTIES:
+:ID:                     eb456982-b9a3-4c47-a6b9-9ff913d30951
+:END:
+
+In order to use =flyspell-correct-helm= interface you have to install
+=flyspell-correct-helm= package in any preferred way and then add following snippet
+to relevant part of your =init.el= file.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'flyspell-correct-helm)
+  (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-wrapper)
+#+END_SRC
+
+Or via =use-package=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
+
+  (use-package flyspell-correct-helm
+    :after flyspell-correct)
+#+END_SRC
+
+If you do not want any binding, just replace =:bind (:map
+flyspell-mode-map ("C-;" . flyspell-correct-wrapper))= with =:defer t=
+to use lazy loading.
+
+** =flyspell-correct-popup= interface
+:PROPERTIES:
+:ID:                     6275479b-a569-4689-b51d-326aff000c1a
+:END:
+
+In order to use =flyspell-correct-popup= interface you have to install
+=flyspell-correct-popup= package in any preferred way and then add following snippet
+to relevant part of your =init.el= file.
+
+#+BEGIN_SRC emacs-lisp
+(require 'flyspell-correct-popup)
+(define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-wrapper)
+#+END_SRC
+
+Or via =use-package=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
+
+  (use-package flyspell-correct-popup
+    :after flyspell-correct)
+#+END_SRC
+
+If you do not want any binding, just replace =:bind (:map
+flyspell-mode-map ("C-;" . flyspell-correct-wrapper))= with =:defer t=
+to use lazy loading.
+
+There are some cool usability suggestions by @alphapapa shared in
+[[https://github.com/d12frosted/flyspell-correct/issues/30][d12frosted/flyspell-correct#30]] that you might want to use. Enjoy!
+
+* Deprecations
+:PROPERTIES:
+:ID:                     aa3ca72d-cf45-4c9c-93cd-c3ef1fc2e1e2
+:END:
+** Deprecations in =v0.5=
+:PROPERTIES:
+:ID:                     8c3332b9-555d-477c-9700-36c9f65dfbdd
+:END:
+
+Unfortunately, the following functions are renamed.
+
+- =flyspell-correct-next-word-generic= -> =flyspell-correct-next=
+- =flyspell-correct-previous-word-generic= -> =flyspell-correct-previous=
+- =flyspell-correct-word-generic= -> =flyspell-correct-at-point=
+
+Please make sure to update to new names.
+
+* Custom interfaces
+:PROPERTIES:
+:ID:                     58868d20-024a-45b4-a919-f82329c6ee22
+:END:
+
+One can easily implement custom interface for =flyspell-correct=. It has to be a
+function accepting two arguments:
+
+- candidates for correction (list of strings)
+- misspelled word (string)
+
+Result must be either a string (replacement word) or a cons of a
+command and a string (replacement word), where the command is one
+of the following:
+
+- skip - do nothing to misspelled word, in rapid mode used for jumping to the
+  next (or previous) misspelled word
+- break - do nothing to misspelled word, break from rapid mode
+- stop - do nothing to misspelled word, break from rapid mode (if enabled) and
+  leave the point at the misspelled word
+- save - replace misspelled word with replacement word and save it to the
+  personal dictionary
+- session - replace misspelled word with replacement word and save it to the
+  session dictionary (correction will be discarded upon quitting Emacs)
+- buffer - replace misspelled word with replacement word and save it to the
+  buffer dictionary (added to the bottom of buffer)
+
+Check any existing interface for reference.
+
+* Highlighting
+:PROPERTIES:
+:ID:                     414a109d-8553-4d36-96ee-55c664810363
+:END:
+
+The word that is being currently corrected (e.g. you are selecting the
+correction for misspelled word) is highlighted with
+=flyspell-correct-highlight-face=. If you wish to disable extra highlighting,
+just set the value of =flyspell-correct-highlight= to =nil=.
+
+#+begin_src emacs-lisp
+  (setq flyspell-correct-highlight nil)
+#+end_src
+
+* Auto correction mode
+:PROPERTIES:
+:ID:                     399a433a-d8db-4731-a62e-f829bf6dc544
+:END:
+
+/Take my advice and don't use this functionality unless you find
+=flyspell-correct-wrapper= function useless for your purposes. You can find more
+info in [[https://github.com/syl20bnr/spacemacs/issues/6209#issuecomment-274320376][this comment]].
+
+This package also provides auto correction minor mode called
+=flyspell-correct-auto-mode=. When enabled it will automatically invoke
+=flyspell-correct-previous-word-generic= after certain delay configured by
+=flyspell-correct-auto-delay= when there is at least one incorrect word.
+
+#+BEGIN_SRC
+(add-hook 'flyspell-mode-hook #'flyspell-correct-auto-mode)
+#+END_SRC
+
+One can also configure interface specially for
+=flyspell-correct-previous-word-generic= called by =flyspell-correct-auto-mode= by
+setting value of =flyspell-correct-auto-mode-interface=.
+
+* Reasoning
+:PROPERTIES:
+:ID:                     89d09c0e-562b-48ca-9ad0-85d9834eee6d
+:END:
+
+There are already packages like =helm-flyspell= and =flyspell-popup=. So why
+would anyone create yet another similar package? The reason is simple - to
+support another interface or completion system. =flyspell-correct= started
+because =ivy= was missing similar to =helm-flyspell= package. But I didn't want
+to create a package just for =ivy=. The reasoning is simple - all those packages
+should have similar functionality but different interface. Adding something new
+to one of these packages ideally should be reflected in all others. So I decided
+to create generic package that works with any interfaces. It's not about one
+package containing all possible interfaces, but about a package giving you
+functionality with an interface of your choice.
+
+And over the time, =flyspell-correct= got some killer features (like quick
+access to misspelled words from anywhere), rapid mode and some others.
+
+* Screenshots
+:PROPERTIES:
+:ID:                     0ad131f7-f943-4e41-a78d-87068fdb04bd
+:END:
+
+** Ivy interface
+:PROPERTIES:
+:ID:                     4680e827-475a-4686-81d3-885fd1cf92f6
+:END:
+
+[[file:images/screenshot-ivy-1.png]]
+
+[[file:images/screenshot-ivy-2.png]]
+
+** Avy Menu interface
+:PROPERTIES:
+:ID:                     d9f7b9c4-b262-4ba4-bfc3-f3fe4e6db906
+:END:
+
+[[file:images/screenshot-avy-menu.png]]
+
+** Popup interface
+:PROPERTIES:
+:ID:                     0125c2f1-cc51-4405-8d8e-e077d443a9ff
+:END:
+
+[[file:images/screenshot-popup.png]]
+
+** Helm interface
+:PROPERTIES:
+:ID:                     4a072429-6425-455e-af7a-ddb428b60d9c
+:END:
+
+[[file:images/screenshot-helm.png]]
+
+** Ido interface
+:PROPERTIES:
+:ID:                     2cb846b9-f962-46fc-9648-e9a5a8970b21
+:END:
+
+[[file:images/screenshot-ido.png]]
+
+** completing-read interface
+:PROPERTIES:
+:ID:                     c5283357-0209-409c-bd7b-053f17d4ced3
+:END:
+
+[[file:images/screenshot-completing-read.png]]
+
+* Acknowledgements
+:PROPERTIES:
+:ID:                     be7625b9-b782-4e5f-962c-bd181c3933a7
+:END:
+
+This package is available thanks to these people:
+
+- [[https://github.com/pronobis][Andrzej Pronobis]] for inspiration and [[https://github.com/pronobis/helm-flyspell][helm-flyspell]]
+- [[https://github.com/xuchunyang][xuchunyang]] for [[https://github.com/xuchunyang/flyspell-popup][flyspell-popup]]
+- [[https://github.com/abo-abo][Oleh Krehel]] for [[https://github.com/abo-abo/swiper][swiper]] and all the help
+
+Additional thanks to all contributors:
+
+- [[https://github.com/gusbrs][gusbrs]]
+- [[https://github.com/Boruch-Baum][Boruch Baum]]
+- [[https://github.com/mrBliss][Thomas Winant]]
+- [[https://github.com/clemera][Clemens Radermacher]]
+- [[https://github.com/Ergus][Jimmy Aguilar Mena]]
+- [[https://github.com/vermiculus][Sean Allred]]
+- [[https://github.com/syohex][Syohei YOSHIDA]]
+- [[https://github.com/blue0513][Taiju Aoki]]
+- [[https://github.com/DamienCassou][Damien Cassou]]
+- [[https://github.com/hubisan][Daniel Hubmann]]
+- [[https://github.com/manuel-uberti][Manuel Uberti]]
+- [[https://github.com/jpkotta][Jonathan Kotta]]
+- [[https://github.com/tpadioleau][Thomas Padioleau]]
+- [[https://github.com/gusbrs][Gustavo Barros]]
+- [[https://github.com/minad][Daniel Mendler]]

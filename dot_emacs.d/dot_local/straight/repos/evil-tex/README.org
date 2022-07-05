@@ -1,0 +1,295 @@
+#+TITLE:   evil-tex
+#+DATE:    February 1, 2020
+#+STARTUP: inlineimages nofold
+
+[[https://melpa.org/#/evil-tex][file:https://melpa.org/packages/evil-tex-badge.svg]] [[https://stable.melpa.org/#/evil-tex][file:https://stable.melpa.org/packages/evil-tex-badge.svg]]
+
+[[https://github.com/emacs-evil/evil][evil]] toolbox for LaTeX editing. Provides many text objects fully utilizing
+[[https://github.com/emacs-evil/evil-surround][evil-surround]], some useful movements, and keymaps for quickly entering
+environments or [[https://github.com/cdominik/cdlatex][cdlatex]]-like accents. And useful toggles.
+
+Heavily inspired by [[https://github.com/lervag/vimtex][vimtex]]; successor of [[https://github.com/hpdeifel/evil-latex-textobjects][evil-latex-textobjects]].
+
+* Table of Contents :TOC_3:noexport:
+- [[#incomplete-showcase][Incomplete Showcase]]
+- [[#installation][Installation]]
+  - [[#interaction-with-other-packages][Interaction with other packages]]
+- [[#overview][Overview]]
+  - [[#text-objects][Text Objects]]
+    - [[#notes][Notes]]
+  - [[#toggles][Toggles]]
+  - [[#misc][Misc.]]
+    - [[#command-argument-movement][Command Argument Movement]]
+    - [[#section-jumping][Section Jumping]]
+- [[#configuration][Configuration]]
+  - [[#custom-env-and-accent-surround-insertions][Custom env and accent surround insertions]]
+  - [[#custom-toggles][Custom Toggles]]
+  - [[#user-options][User Options]]
+- [[#acknowledgements][Acknowledgements]]
+- [[#appendix][Appendix]]
+  - [[#keymaps][Keymaps]]
+    - [[#environment-keymap][Environment keymap]]
+    - [[#cdlatex-accent-keymap][cdlatex accent keymap]]
+    - [[#delimiter-keymap][Delimiter keymap]]
+
+* Incomplete Showcase
+=|= marks point.
+
+=\ti|lde{h}= \to *cic* /(change inside command)/ \to =\tilde{|}=
+
+=\tilde{h|}= \to *cscc bar* /(change surrounding command to =bar=)/ \to =\bar{h}=
+
+=\dv|{}= \to *cscc pdv* /(change surrounding command to =pdv=)/ \to =\pdv{}=
+
+=\eps|ilon= \to *cscc mu* /(change surrounding command to =mu=)/ \to =\mu=
+
+=\(\sum_{i=1}^{n} i^2|\)= \to *cim* /(change inner math)/ \to =\(|\)=
+
+=\(\sum_{i=1}^{n} i^2|\)= \to *mtm* /(toggle surrounding math)/ \to =\[\sum_{i=1}^{n} i^2|\]=
+
+=\[a|^2\]= \to *csmeA* /(change surrounding math to environment =align*=)/ \to
+=\begin{align*}\n a^2 \n\end{align}=
+
+=(\mu|_\nu)= \to *csddP* /(change surrounding delimiter to =\left(=)/ \to =\left(\mu|_\nu\right)=
+
+The =cs= "change surrounding" bindings rely on [[https://github.com/emacs-evil/evil-surround][evil-surround]] being installed and enabled.
+* Installation
+This package can be installed from [[https://melpa.org/#/evil-tex][MELPA]], or by cloning it and putting it in the load path.
+For ease of use, hook it to =LaTeX-mode= by adding the following to your configuration:
+#+BEGIN_SRC emacs-lisp
+(add-hook 'LaTeX-mode-hook #'evil-tex-mode)
+#+END_SRC
+
+This package requires =evil=, =auctex=, and =Emacs 25.1+=.
+
+If you are using [[https://github.com/hlissner/doom-emacs][Doom Emacs]], you can just enable =latex= and =(evil +everywhere)= in your =init.el=.
+** Interaction with other packages
+=evil-tex= does not require, but supports [[https://github.com/emacs-evil/evil-surround][evil-surround]] (using version =1.1.1=
+or newer is preferred, to leverage [[https://github.com/emacs-evil/evil-surround/pull/165][#165]]). [[https://github.com/cute-jumper/evil-embrace.el][evil-embrace]] is also supported, in the
+sense that it is told to overlook the bindings.
+
+=evil-tex= also supports [[https://github.com/justbur/emacs-which-key][which-key]] to show the keys in [[#keymaps][keymaps]]. Likewise, the
+toggles under =ts= play well with [[https://github.com/hlissner/evil-snipe][evil-snipe]] as expected.
+
+* Overview
+** Text Objects
+This package defines a number of text objects:
+| Key | Abbreviation    | Text Object Target                                                       | Surround behavior (with [[https://github.com/emacs-evil/evil-surround][evil-surround]])     |
+|-----+-----------------+--------------------------------------------------------------------------+--------------------------------------------|
+| ~c~ | command         | TeX macros: ~\foo{...}~                                                  | Prompts you for a macro                    |
+| ~e~ | environment     | ~\begin{...}~ ~\end{...}~ blocks                                         | Prompts you with [[#environment-keymap][the env keymap]]            |
+| ~m~ | math            | Both inline ~\( \)~, display ~\[ \]~, and  ~$~                           | Surrounds with ~\( \)~                     |
+| ~M~ | Display math    | N/A                                                                      | Surrounds with ~\[ \]~                     |
+| ~d~ | delimiters      | Math delimiters, ~(foo), \left(foo\right), [foo], \left[foo\right]~ etc. | Prompts you with [[#delimiter-keymap][the delim keymap]]          |
+| ~S~ | sections        | LaTeX parts, chapters, (sub)sections, and (sub)paragraphs                |                                            |
+| ~;~ | [[#cdlatex-accent-keymap][CDLaTeX accents]] | N/A                                                                      | Prompts you with [[#cdlatex-accent-keymap][the cdlatex accent keymap]] |
+| ~^~ | superscript     | ~x^a~ ~x^\alpha~ ~x^{...}~                                               | Surrounds with ~^{ }~                      |
+| ~_~ | subscript       | ~x_a~ ~x_\alpha~ ~x_{...}~                                               | Surrounds with ~_{ }~                      |
+| ~T~ | table cell      | LaTeX table/align cells, e.g. ~&foo&~.                                   | Surrounds with ~& &~                       |
+
+The full text object definitions are as follows:
+
+#+BEGIN_SRC LaTeX
+    \foobar{barbaz}     \foobar{barbaz}    \foobar     \foobar    \foobar{}     \foobar{}
+    └─────────────┘             └────┘     └─────┘            ┆   └───────┘             ┆
+           ac                     ic         ac      ic (empty)      ac            ic (empty)
+
+   ┌\begin{foobar}     \begin{foobar}
+   │                  ┌
+ ae│ baz            ie│ baz
+   │                  └
+   └\end{foobar}       \end{foobar}
+
+   \(foobar\)    \(foobar\)    \[foobar\]    \[foobar\]
+   └────────┘      └────┘      └────────┘      └────┘
+       am            im            am            im
+
+   (foobar)    (foobar)    \left(foobar\right)    \left(foobar\right)  \Bigl(foobar\Bigr)    \Bigl(foobar\Bigr)
+   └──────┘     └────┘     └─────────────────┘          └────┘         └────────────────┘          └────┘
+      ad          id               ad                     id                   ad                    id
+
+    ┌\section{foo}          \section{foo}
+    │                      ┌
+  aS│ baz                iS│ baz
+    │\subsection*{}        │\subsection*{}
+    └ qux                  └ qux
+     \chapter*{bar}        \chapter*{bar}
+
+    a^{foo}    a^{foo}    a^b    a^b    a^\bar    a^\bar
+     └────┘       └─┘      └╵      ╵     └───┘      └──┘ 
+       a^          i^      a^      i^     a^         i^
+       
+    & foobar &    & foobar &    & foobar \\    & foobar \\    
+    └───────┘      └──────┘     └───────┘       └──────┘
+        aT            iT            aT             iT
+#+END_SRC LaTeX
+/The diagram rendering might bug out on mobile./
+
+*** Notes
+- The section objects extends up to the next ~\section{}~ type command of equal
+  or higher rank to the one closest to the point from above, and does not
+  distinguish between named and unnamed sections.
+- =aT= will always only contain the left delimiter, unless it is the first
+  cell of its line, then it will only contain the right delimiter.
+** Toggles
+There are a few operations one might want to toggle between frequently, without
+pressing too many keys. To this end we provide a few toggles, bound by default
+to =mt*= (for "/magnificent toggle/"), as you have 25 other marks to choose
+from.
+
+For vimtex users, or people who have something against the letter =s=, we also
+provide the ability to map the toggles to =ts= instead of =mt= e.g. instead of
+=mtd= toggling delimiters, =tsd= will. See [[#configuration][configuration]]. The toggles are:
+
+| Key | Abbreviation | Behaviour                                                                               |
+|-----+--------------+-----------------------------------------------------------------------------------------|
+| ~mtc~ | command      | toggle asterisk on command, e.g. ~\foo~ \Leftrightarrow ~\foo*~                                           |
+| ~mtd~ | delimiter    | toggle between delimiter autosizing, e.g.  ~(foo)~ \Leftrightarrow ~\Left(foo\right)~                     |
+| ~mte~ | environment  | toggle enviornment asterisk e.g. ~\begin{equation}~ \Leftrightarrow ~\begin{equation*}~                   |
+| ~mtm~ | math         | toggle between inline and display math, i.e. ~\(foo\)~ \Leftrightarrow ~\[foo\]~                          |
+| ~mtM~ | math align*  | toggle between align* env and display math                                              |
+| ~mtS~ | section      | "toggle" section name, by entering a new one from the minibuffer. =M-n= for original name |
+
+** Misc.
+*** Command Argument Movement
+The binding =M-n= is provided for =cd-latex= =TAB=-like brace movement, useful
+for quick navigation in marco arguments without going to normal mode.
+
+~\bar{h|}~     \to =M-n= \to ~\bar{h}|~
+
+~\frac{a|}{}~  \to =M-n= \to ~\frac{a}{|}~
+
+~\frac{a|}{b}~ \to =M-n= \to ~\frac{a}{b|}~
+
+~\frac{a}{b|}~ \to =M-n= \to ~\frac{a}{b}|~
+*** Section Jumping
+=]​]= and =[​[= jump between section headings (=\section=, =\subsection*=, etc).
+* Configuration
+** Custom env and accent surround insertions
+Should be done by using ~evil-tex-bind-to-(env|cdlatex-accents|delim)-map~.
+example, to add a ~quote~ environment and have a default ~[!ht]~ position for
+figures:
+#+BEGIN_SRC emacs-lisp
+(evil-tex-bind-to-env-map '(("q" . "quote")
+                            ("f" "\\begin{figure}[!ht]" . "\\end{figure}")))
+#+END_SRC
+Same for ~evil-tex-bind-to-cdlatex-accents-map~ and ~evil-tex-bind-to-delim-map~
+#+BEGIN_SRC emacs-lisp
+(evil-tex-bind-to-cdlatex-accents-map '(("b" . "fbox")))
+(evil-tex-bind-to-delim-keymap '(("h" "\\huge(" . "\\huge)")))
+#+END_SRC
+Same for ~evil-tex-user-delim-map-generator-alist~. For the complete format take
+a look at the documentation of ~evil-tex-bind-to-env-map~.
+** Custom Toggles
+Just bind your function to ~evil-tex-toggle-map~, its a normal keymap. Nothing
+fancy here.
+** User Options
+ - By default, the newline proceeding ~\begin{...}~ and preceding ~\end{...}~ is
+   selected as part of the delimiter. This way, when doing =cie= you're placed on
+   a separate line, and surrounding with envs would force separate lines for
+   ~\begin~, inner text, and ~\end~. To disable this newline behaviour, set
+   ~evil-tex-select-newlines-with-envs~ to ~nil~.
+- Similarly, empty environments are inserted (using surround) with newlines by
+  default. This way, when doing =ysiwee=, the environment is inserted above and
+  below the word. To disable this and have it surround the text object in the
+  same line, set ~evil-tex-select-newlines-in-envs~ to ~nil~. Note that this
+  will not insert newlines environment name changes such as =cseea= even if they
+  were already there.
+- The toggle bindings are set by default to =mt=. To turn this off and regain the
+  invaluable =t= mark, set ~evil-tex-toggle-override-m~ to ~nil~.
+- In order to use =ts= for toggle bindings, set ~evil-tex-toggle-override-t~ to
+  ~t~. This will overide the standard =t= motion, and will rob you of the
+  ability to move to one character before =s= (although you can always do =fsh=).
+
+* Acknowledgements
+
+We would like to thank [[https://github.com/lervag][@lervag]] for writing the excellent [[https://github.com/lervag/vimtex][vimtex]] vim plugin,
+which was the main thing we missed about vim. We would also like to thank
+[[https://github.com/hpdeifel/][@hpdeifel]] for writing [[https://github.com/hpdeifel/evil-latex-textobjects][evil-latex-textobjects]], which laid the groundwork for this
+package and helped us get started with elisp. Lastly, we would like to thank
+[[https://github.com/hlissner/][@hlissner]] helping us with a particulary tricky bit of elisp, and also writing
+[[https://github.com/hlissner/doom-emacs][Doom Emacs]] without which this plugin would probably not exist.
+
+* Appendix
+** Keymaps
+*** Environment keymap
+Giving a prefix argument would prompt for options.
+| Key  | Environment | Category                  |
+|------+-------------+---------------------------|
+| ~x~  | prompt user | -                         |
+|------+-------------+---------------------------|
+| ~e~  | equation    | Built In                  |
+| ~E~  | equation*   |                           |
+| ~f~  | figure      |                           |
+| ~i~  | itemize     |                           |
+| ~I~  | enumerate   |                           |
+| ~y~  | array       |                           |
+| ~b~  | frame       | Beamer                    |
+| ~a~  | align       | AmsMath                   |
+| ~A~  | align*      |                           |
+| ~n~  | alignat     |                           |
+| ~N~  | alignat*    |                           |
+| ~r~  | eqnarray    |                           |
+| ~l~  | flalign     |                           |
+| ~L~  | flalign*    |                           |
+| ~g~  | gather      |                           |
+| ~G~  | gather*     |                           |
+| ~m~  | multline    |                           |
+| ~M~  | multline*   |                           |
+| ~c~  | cases       |                           |
+| ~ta~ | axiom       | Common Theorems, prefix t |
+| ~tc~ | corollary   |                           |
+| ~tC~ | claim       |                           |
+| ~td~ | definition  |                           |
+| ~te~ | examples    |                           |
+| ~ts~ | exercise    |                           |
+| ~tl~ | lemma       |                           |
+| ~tp~ | proof       |                           |
+| ~tq~ | question    |                           |
+| ~tr~ | remark      |                           |
+| ~tt~ | theorem     |                           |
+*** cdlatex accent keymap
+See [[https://github.com/cdominik/cdlatex/blob/a5cb624ef/cdlatex.el#L141][cdlatex]]. "style?" implies that the braces come before the macro, e.g
+={\displaystyle ...}=
+| Key | Accent Macro      | Style? |
+|-----+-------------------+--------|
+| ~.~ | dot               |        |
+| ~:~ | ddot              |        |
+| ~~~ | tilde             |        |
+| ~N~ | widetilde         |        |
+| ~^~ | hat               |        |
+| ~H~ | widehat           |        |
+| ~-~ | bar               |        |
+| ~T~ | overline          |        |
+| ~_~ | underline         |        |
+| ~{~ | overbrace         |        |
+| ~}~ | underbrace        |        |
+| ~>~ | vec               |        |
+| ~/~ | grave             |        |
+| ~\~ | acute             |        |
+| ~v~ | check             |        |
+| ~u~ | breve             |        |
+| ~m~ | mbox              |        |
+| ~c~ | mathcal           |        |
+| ~r~ | mathrm/textrm     |        |
+| ~i~ | mathit/textit     |        |
+| ~l~ | NONE!!/textsl     |        |
+| ~b~ | mathbf/textbf     |        |
+| ~e~ | mathem/emph       |        |
+| ~y~ | mathtt/texttt     |        |
+| ~f~ | mathsf/textsf     |        |
+| ~0~ | textstyle         |        |
+| ~1~ | displaystyle      | yes    |
+| ~2~ | scriptstyle       | yes    |
+| ~3~ | scriptscriptstyle | yes    |
+*** Delimiter keymap
+| key | left delimiter | right delimiter |
+|-----+----------------+-----------------|
+| ~P~ | ~(~            | ~)~             |
+| ~p~ | ~\left(~       | ~\right)~       |
+| ~S~ | ~[~            | ~]~             |
+| ~s~ | ~\left[~       | ~\right]~       |
+| ~C~ | ~\{~           | ~\}~            |
+| ~c~ | ~\left\{~      | ~\right\}~      |
+| ~R~ | ~\langle~      | ~\rangle~       |
+| ~r~ | ~\left\langle~ | ~\right\rangle~ |

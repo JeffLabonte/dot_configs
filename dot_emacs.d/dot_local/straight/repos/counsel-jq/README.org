@@ -1,0 +1,58 @@
+* counsel-jq
+
+** Live queries against JSON and YAML data
+
+[[https://melpa.org/#/counsel-jq][file:https://melpa.org/packages/counsel-jq-badge.svg]]
+
+TL;DR: If you're a fan of [[https://stedolan.github.io/jq/][jq]] or [[https://github.com/mikefarah/yq][yq]] and you're using Emacs
+[[https://github.com/abo-abo/swiper][Ivy/Swiper/Counsel]], then this package is for you.
+
+Longer version: If you are working with complex nested JSON (or YAML)
+structures, you are probably familiar with [[https://stedolan.github.io/jq/][jq]] (or [[https://github.com/mikefarah/yq][yq]]) which is like
+sed for JSON data and great at what it does. However, being a
+command-line tool like sed, the feedback for writing queries and
+seeing their results is a discrete process and not live.
+
+#+begin_quote
+Cool. That might even be a feature that would draw in new Emacs users!
+#+end_quote
+([[https://github.com/alphapapa][alphapapa]] during the [[https://github.com/melpa/melpa/pull/6527#issuecomment-551311397][melpa submission]])
+
+When working with Emacs, we are used to good auto-completion and live
+feedback. Formerly, this was mostly done with static input, but with
+modern completion frameworks like [[https://github.com/abo-abo/swiper][Ivy]], this can be done with dynamic
+inputs, as well.
+
+counsel-jq is a package with which you can quickly test queries and
+traverse a complex JSON and YAML structure whilst having live
+feedback. Just call =M-x counsel-jq= in a buffer containing JSON or
+YAML, then start writing your =jq= or =yq= query string and see the
+output appear live in the message area. Whenever you're happy, hit
+=RET= and the results will be displayed to you in the buffer
+=*jq-json*=.
+
+Demo:
+
+[[file:images/demo-counsel-jq.gif][./images/demo-counsel-jq.gif]]
+
+** Configuration
+
+To define whether you want to use =yq= over =jq= as processing tool,
+call =M-x customize= and set =counsel-jq-command= to =yq=.
+
+In the same manner you can define the name of the results buffer by
+customizing the =counsel-jq-buffer= variable.
+
+Lastly, by default, the results buffer =*jq-json*= buffer will have
+the major mode =js-mode=, but that can be customized with the
+=counsel-jq-json-buffer-mode= variable if you prefer =json-mode=,
+=rsjx-mode= or any other mode.
+
+** EmacsConf 2020 talk on =counsel-jq=
+
+On [2020-11-29 Sun], [[https://github.com/munen/][Zen Monk Alain M. Lafon (@munen)]] gave a talk at
+EmacsConf 2020 introducing =counsel-jq=. There's a video recording
+with explanations and demos behind this complementary blog post:
+https://200ok.ch/posts/2020-11-30_emacsconf_traverse_complex_json_structures_with_live_feedback_with_counseljq.html
+
+#+html: <p align="center"><a href="https://200ok.ch/posts/2020-11-30_emacsconf_traverse_complex_json_structures_with_live_feedback_with_counseljq.html"><img src="https://github.com/200ok-ch/counsel-jq/raw/master/images/emacsconf-2020-video-preview.png"/></a></p>

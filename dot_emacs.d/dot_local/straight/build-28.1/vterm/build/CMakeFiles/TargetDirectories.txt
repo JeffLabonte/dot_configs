@@ -1,0 +1,5 @@
+/Users/jflabonte/.emacs.d/.local/straight/build-28.1/vterm/build/CMakeFiles/vterm-module.dir
+/Users/jflabonte/.emacs.d/.local/straight/build-28.1/vterm/build/CMakeFiles/libvterm.dir
+/Users/jflabonte/.emacs.d/.local/straight/build-28.1/vterm/build/CMakeFiles/run.dir
+/Users/jflabonte/.emacs.d/.local/straight/build-28.1/vterm/build/CMakeFiles/edit_cache.dir
+/Users/jflabonte/.emacs.d/.local/straight/build-28.1/vterm/build/CMakeFiles/rebuild_cache.dir

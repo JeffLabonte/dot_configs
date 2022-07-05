@@ -1,0 +1,26 @@
+# -*- fill-column: 100 -*-
+#+STARTUP: content
+
+* Changelog
+** 0.7
+   - [Breaking change] For ~dap-lldb.el~, change ~type~ to ~lldb-vscode~.
+** 0.5
+   - added support for running TestNG tests
+   - added ~dap-auto-configure-mode~ as the new ~dap-mode~ integration point.
+   - Migrated to ~lsp-protocol.el~.
+** 0.3
+   - Added node/go/chrome/firefox/php/ruby/elixir/go/LLDB debuggers support
+   - Added support for mouse hover
+   - Added automatic installation of debuggers
+** 0.2
+   - Added python support
+   - Added ~dap-hydra~
+   - Added ~dap-ui-repl~
+   - Bug fixing.
+** v0.1
+   - Support for managing breakpoints
+   - Next/StepIn/StepOut operations
+   - Sessions window
+   - Inspections
+   - Evaluating
+   - Breakpoint persistence and session management

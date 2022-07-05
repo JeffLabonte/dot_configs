@@ -1,0 +1,15 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[advice]
+	detachedhead = false
+[remote "origin"]
+	url = https://github.com/neovim/libvterm.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "nvim"]
+	remote = origin
+	merge = refs/heads/nvim

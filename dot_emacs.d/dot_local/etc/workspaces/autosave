@@ -1,0 +1,78 @@
+;; -*- mode: emacs-lisp; eval: (progn (pp-buffer) (indent-buffer)) -*-
+((def-persp "main"
+   ((def-buffer "issue_serializers.py" "/Users/jflabonte/Development/Poka/projects/poka_backend/api/issue_management/serializers/issue_serializers.py" python-mode))
+   (def-wconf
+     (((min-height . 4)
+       (min-width . 20)
+       (min-height-ignore . 3)
+       (min-width-ignore . 4)
+       (min-height-safe . 1)
+       (min-width-safe . 4)
+       (min-pixel-height . 4)
+       (min-pixel-width . 20)
+       (min-pixel-height-ignore . 3)
+       (min-pixel-width-ignore . 4)
+       (min-pixel-height-safe . 1)
+       (min-pixel-width-safe . 4))
+      hc
+      (pixel-width . 216)
+      (pixel-height . 61)
+      (total-width . 216)
+      (total-height . 61)
+      (normal-height . 1.0)
+      (normal-width . 1.0)
+      (combination-limit)
+      (leaf
+       (pixel-width . 31)
+       (pixel-height . 61)
+       (total-width . 31)
+       (total-height . 61)
+       (normal-height . 1.0)
+       (normal-width . 0.14351851851851852)
+       (parameters
+        (window-side . left)
+        (window-slot . 0)
+        (better-jumper-struct . #s(better-jumper-jump-list-struct
+                                   (0 1 .
+                                      [("/Users/jflabonte/Development/Poka/projects/poka_backend/api/issue_management/serializers/issue_serializers.py" 5 "57lgbv")
+                                       nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])
+                                   -1)))
+       (buffer " *NeoTree*"
+               (selected)
+               (hscroll . 0)
+               (fringes 0 0 nil nil)
+               (margins nil)
+               (scroll-bars nil 0 t nil 0 t nil)
+               (vscroll . 0)
+               (dedicated . t)
+               (point . 677)
+               (start . 596)))
+      (leaf
+       (last . t)
+       (pixel-width . 185)
+       (pixel-height . 61)
+       (total-width . 185)
+       (total-height . 61)
+       (normal-height . 1.0)
+       (normal-width . 0.8564814814814815)
+       (parameters
+        (better-jumper-struct . #s(better-jumper-jump-list-struct
+                                   (0 1 .
+                                      [("/Users/jflabonte/Development/Poka/projects/poka_backend/api/issue_management/serializers/issue_serializers.py" 5 "57lgbv")
+                                       nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])
+                                   -1)))
+       (buffer "issue_serializers.py"
+               (selected . t)
+               (hscroll . 0)
+               (fringes 0 0 nil nil)
+               (margins nil)
+               (scroll-bars nil 0 t nil 0 t nil)
+               (vscroll . 0)
+               (dedicated)
+               (point . 97)
+               (start . 1))
+       (prev-buffers
+        ("*doom*" 1 1819)
+        ("*scratch*" 1 1)))))
+   (def-params nil)
+   nil nil nil))

@@ -1,0 +1,8 @@
+/ert-tests/ert.el
+/ert-tests/list-utils.el
+/ert-tests/pcache.el
+/ert-tests/persistent-soft.el
+/ert-tests/test_output/
+*-autoloads.el
+*.elc
+*~

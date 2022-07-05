@@ -1,0 +1,242 @@
+[SEMI Version names]
+
+0.72	--------		--------
+0.75	--------		--------
+0.83	--------		--------
+0.87	--------		--------
+0.88	--------		--------
+0.91	--------		--------
+0.92	--------		--------
+
+;;-------------------------------------------------------------------------
+;;	Hokuriku Railway	北陸鉄道
+;;	Ishikawa Line		石川線
+;;-------------------------------------------------------------------------
+0.96	Kaga-Ichinomiya		加賀一の宮	; （白山比咩神社）
+0.97	Naka-Tsurugi		中鶴来
+0.112	Tsurugi			鶴来		; <=> じゃいバス
+0.115	Hinomiko		日御子
+0.115.1	Oyanagi			小柳
+0.115.2	Inokuchi		井口
+0.116	Dōhōji			道法寺
+0.118	Sodani			曽谷
+0.118.1	Shijima			四十万
+0.118.2	Otomaru			乙丸
+1.0.0	Nukajūtaku-mae		額住宅前
+1.0.1	Magae			馬替
+1.0.2	Nonoichi-Kōdaimae	野々市工大前
+1.1.0	Nonoichi		野々市
+1.1.1	Oshino			押野
+1.1.2	Shin-Nishikanazawa	新西金沢	; <=> JR 西金沢
+1.2.0	Nishiizumi		西泉
+1.2.1	Nomachi			野町
+
+;;-------------------------------------------------------------------------
+;;	West Japan Railway	西日本旅客鉄道	http://www.westjr.co.jp/
+;;	Hokuriku Line		北陸本線
+;;-------------------------------------------------------------------------
+1.2.2	Naoetsu			直江津		; = JR 信越本線
+1.2.3	Tanihama		谷浜
+1.2.4	Arimagawa		有間川
+1.3.0	Nadachi			名立
+1.3.1	Tsutsuishi		筒石
+1.3.2	Nō			能生
+1.3.3	Uramoto			浦本
+1.3.4	Kajiyashiki		梶屋敷
+1.4.0	Itoigawa		糸魚川		; = JR 大糸線
+1.4.1	Ōmi			青海
+1.4.2	Oyashirazu		親不知
+1.4.3	Ichiburi		市振
+1.4.4	Ecchū-Miyazaki		越中宮崎
+1.4.5	Tomari			泊
+1.4.6	Nyūzen			入善
+1.5.0	Nishi-Nyūzen		西入善
+1.5.1	Ikuji			生地
+1.5.2	Kurobe			黒部
+1.5.3	Uozu			魚津		; <=> 富山地方鉄道
+1.5.4	Higashi-Namerikawa	東滑川
+1.6.0	Namerikawa		滑川		; <=> 富山地方鉄道
+1.7.0	Mizuhashi		水橋
+1.7.1	Higashi-Toyama		東富山
+1.8.0	Toyama			富山		; = JR 高山本線、富山港線
+1.8.1	Kureha			呉羽
+1.8.2	Kosugi			小杉
+1.8.3	Ecchū-Daimon		越中大門
+1.8.4	Takaoka			高岡		; = JR 氷見線、城端線
+1.8.5	Nishi-Takaoka		西高岡
+1.8.6	Fukuoka			福岡
+1.9.0	Isurugi			石動
+1.9.1	Kurikara		倶利伽羅
+1.10.0	Tsubata			津幡
+1.10.1	Morimoto		森本
+1.10.2	Higashi-Kanazawa	東金沢
+1.11.0	Kanazawa		金沢		; <=> 北陸鉄道 北鉄金沢
+1.12.0	Nishi-Kanazawa		西金沢		; <=> 北陸鉄道 新西金沢
+1.12.1	[JR] Nonoichi		[JR] 野々市
+1.13.0	Mattō			松任
+1.13.1	Kaga-Kasama		加賀笠間
+1.13.2	Mikawa			美川
+1.13.3	Komaiko			小舞子
+1.13.4	Terai			寺井
+1.13.5	Meihō			明峰
+1.13.6	Komatsu			小松
+1.13.7	Awazu			粟津
+1.14.0	Iburihashi		動橋
+1.14.1	Kaga-Onsen		加賀温泉
+1.14.2	Daishōji		大聖寺
+1.14.3	Ushinoya		牛ノ谷
+1.14.4	Hosorogi		細呂木
+1.14.5	Awara-Onsen		芦原温泉
+1.14.6	Maruoka			丸岡
+1.14.7	Harue			春江
+-------	Morita			森田
+-------	Fukui			福井
+:	:			:
+-------	Tsuruga			敦賀		; = JR 小浜線
+-------	Shin-Hikida		新疋田
+-------	Ōmi-Shiotsu		近江塩津	; = JR 湖西線
+-------	Yogo			余呉
+-------	Kinomoto		木ノ本
+-------	Takatsuki		高月
+-------	Kawake			河毛
+-------	Torahime		虎姫
+-------	Nagahama		長浜
+-------	Tamura			田村
+-------	Sakata			坂田
+	(Maibara)		(米原)		; = JR 東海道本線
+
+
+[WEMI version names]
+
+;;-------------------------------------------------------------------------
+;;	East Japan Railway	東日本旅客鉄道	http://www.jreast.co.jp/
+;;	Tōkaidō Line		東海道本線
+;;-------------------------------------------------------------------------
+1.2.0	Tōkyō			東京
+1.2.1	Shinbashi		新橋	; = JR 山手線、横須賀線
+1.2.2	Shinagawa		品川	; = JR 山手線、横須賀線
+1.2.3	Kawasaki		川崎	; = JR 南武線
+1.2.4	Yokohama		横浜	; = JR 京浜東北線・根岸線、横須賀線
+1.3.0	Totsuka			戸塚	; = JR 横須賀線
+1.3.1	Ōfuna			大船	; = JR 根岸線、横須賀線
+1.4.0	Fujisawa		藤沢	; <=> 小田急電鉄 江ノ島線、江ノ島電鉄
+1.4.1	Tsujidō			辻堂	; （「辻」= J90@B-4454:128b）
+1.4.2	Chigasaki		茅ヶ崎	; = JR 相模線
+1.4.3	Hiratsuka		平塚
+1.4.4	Ōiso			大磯
+1.4.5	Ninomiya		二宮
+1.4.6	Kōzu			国府津	; = JR 御殿場線
+1.5.0	Kamonomiya		鴨宮
+1.5.1	Odawara			小田原	; <=> 小田急、箱根登山鉄道、
+					;     伊豆箱根鉄道
+1.5.2	Hayakawa		早川
+1.5.3	Nebukawa		根府川
+1.5.4	Manazuru		真鶴
+1.6.0	Yugawara		湯河原
+1.7.0	Atami			熱海	; = JR 伊東線
+;;-------------------------------------------------------------------------
+;;	Central Japan Railway	東海旅客鉄道
+;;-------------------------------------------------------------------------
+1.7.1	Kan'nami		函南
+1.8.0	Mishima			三島	; = 伊豆箱根鉄道
+1.8.1	Numazu			沼津	; = JR 御殿場線
+1.8.2	Katahama		片浜
+1.8.4	Hara			原
+1.8.5	Higashi-Tagonoura	東田子ノ浦
+1.8.6	Yoshiwara		吉原	; = 岳南鉄道
+1.9.0	Fuji			富士	; = JR 身延線
+1.9.1	Fujikawa		富士川
+1.10.0	Shin-Kambara		新蒲原
+1.10.1	Kambara			蒲原
+1.10.2	Yui			由比
+1.11.0	Okitsu			興津
+1.12.0	Shimizu			清水
+1.12.1	Kusanagi		草薙
+1.13.0	Shizuoka		静岡
+1.13.1	Abekawa			安倍川
+1.13.2	Mochimune		用宗
+1.13.3	Yaizu			焼津
+1.13.4	Nishi-Yaizu		西焼津
+1.13.5	Fijieda			藤枝
+1.13.6	Rokugō			六合
+1.13.7	Shimada			島田
+1.14.0	Kanaya			金谷	; = 大井川鉄道
+------	Kikugawa		菊川
+------	Kakegawa		掛川	; = 天竜浜名湖鉄道
+------	Fukuroi			袋井
+------	Iwata			磐田
+------	Toyodachō		豊田町
+------	Tenryūgawa		天竜川
+------	Hamamatsu		浜松	; = 遠州鉄道
+------	Takatsuka		高塚
+------	Maisaka			舞阪
+------	Bentenjima		弁天島
+------	Araimachi		新居町
+------	Wasizu			鷲津
+------	Shinjohara		新所原	; = 天竜浜名湖鉄道
+------	Futagawa		二河
+------	Toyohashi		豊橋	; = JR 飯田線
+:	:			:
+------	Kanayama		金山	; =（JR 中央本線）
+------	Otōbashi		尾頭橋
+------	Nagoya			名古屋	; = JR 関西本線（・中央本線）
+:	:			:
+------	Gifu			岐阜	; = JR 高山本線
+:	:			:
+------	Samegai			醒ヶ井
+;;-------------------------------------------------------------------------
+;;	West Japan Railway	西日本旅客鉄道	http://www.westjr.co.jp/
+;;-------------------------------------------------------------------------
+------	Maibara			米原	; = JR 北陸本線
+:	:			:
+------	Kusatsu			草津	; = JR 草津線
+:	:			:
+------	Yamashina		山科	; = JR 湖西線
+------	Kyōto			京都	; = JR 奈良線・山陰本線
+					; <=> 近鉄 京都線、京都市交通局 烏丸線
+:	:			:
+------	Ōsaka			大阪	; = JR 大阪環状線 <=> JR 東西線 北新地
+					;   <=> 大阪市交通局、阪神、阪急 梅田
+:	:			:
+------	Kōbe			神戸	; = JR 山陽本線
+
+
+[REMI version names]
+
+;;-------------------------------------------------------------------------
+;;	West Japan Railway	西日本旅客鉄道	http://www.westjr.co.jp/
+;;	Himi Line		氷見線
+;;-------------------------------------------------------------------------
+1.4.0	Himi			氷見
+1.5.0	Shimao			島尾
+1.6.0	Amaharashi		雨晴
+1.8.0	Ecchū-Kokubu		越中国分
+1.8.1	Fushiki			伏木	; <=> ウラジオスットック航路
+1.8.2	Nōmachi			能町
+1.8.3	Ecchū-Nakagawa		越中中川
+1.8.4	Takaoka			高岡	; = JR 北陸本線、城端線
+
+;;-------------------------------------------------------------------------
+;;	Hokuetsu Express	北越急行
+;;		http://www.tiara.or.jp/~tokamaci/hokuhoku/hokuhoku.html
+;;	Hokuhoku Line		ほくほく線
+;;-------------------------------------------------------------------------
+1.13.0	Saigata			犀潟	; = JR 信越本線
+1.13.1	Kubiki			くびき
+1.13.2	Ōike-Ikoinomori		大池いこいの森
+1.14.0	Uragawara		うらがわら
+1.14.1	Mushigawaōsugi		虫川大杉
+1.14.2	Hokuhoku-Ōshima		ほくほく大島
+1.14.3	Matsudai		まつだい
+
+
+[etc.]
+
+;;-------------------------------------------------------------------------
+;;	West Japan Railway	西日本旅客鉄道	http://www.westjr.co.jp/
+;;	Kosei Line	 	湖西線
+;;-------------------------------------------------------------------------
+-------	(Ōmi-Shiotsu)		(近江塩津)	; = JR 北陸本線
+:	:			:
+-------	Nishi-Ōtsu		西大津
+	(Yamashina)		(山科)	; = JR 東海道本線
